@@ -586,6 +586,26 @@ def _to_text(tree: LexborHTMLParser) -> str:
 
 # --- the live page ---------------------------------------------------------
 
+#: When a box's STYLE keeps a person from seeing it: not displayed, not
+#: visible, or so transparent nobody can tell it is there. One copy, joined into
+#: every script that asks (the snapshot, VISIBLE_HTML_JS, the label check, and
+#: the upload's two in actions.py).
+#:
+#: ⛔ THE THRESHOLD IS 0.01, NOT 0. There were four definitions of "visible"
+#: and they disagreed on exactly this: the snapshot and the HTML clone called
+#: opacity 0.005 visible, the upload called it hidden, so one server gave two
+#: answers about one element. A page hides a field at 0.001 as surely as at 0.
+#: How BIG a box must be is not here on purpose: the snapshot keeps a 1x1
+#: control a label operates, the upload sends the hand to the label of an
+#: input that small, and each says why where it decides.
+STYLE_HIDES_JS = """
+    function transparent(s) { return parseFloat(s.opacity) <= 0.01; }
+    function styleHides(s) {
+        return s.display === 'none' || s.visibility === 'hidden' || transparent(s);
+    }
+"""
+
+
 #: A form control the page draws at opacity 0 while a visible label stands in
 #: for it. Vuetify does this to every labelled text field that is not focused:
 #: the <input> is laid out full size, enabled and typable, at opacity 0, and
@@ -600,6 +620,7 @@ def _to_text(tree: LexborHTMLParser) -> str:
 #:
 #: Shared by the snapshot (actions.SNAPSHOT_JS) and VISIBLE_HTML_JS below,
 #: joined in by concatenation for the reason given above SNAPSHOT_CSS.
+#: It needs STYLE_HIDES_JS, which every script joins in before it.
 LABELLED_CONTROL_JS = """
     function labelledControl(el) {
         if (!/^(input|select|textarea)$/.test(el.tagName.toLowerCase())) return false;
@@ -612,8 +633,7 @@ LABELLED_CONTROL_JS = """
                 // display:none, which the label's own computed style does not.
                 if (typeof l.checkVisibility === 'function'
                     && !l.checkVisibility({opacityProperty: true, visibilityProperty: true})) continue;
-                const s = getComputedStyle(l);
-                if (s.display === 'none' || s.visibility === 'hidden' || parseFloat(s.opacity) === 0) continue;
+                if (styleHides(getComputedStyle(l))) continue;
                 // A label is usually inline, so its painted area is its line
                 // boxes: one of them has to be on screen.
                 const boxes = [...l.getClientRects()];
@@ -627,7 +647,7 @@ LABELLED_CONTROL_JS = """
 """
 
 
-VISIBLE_HTML_JS = """() => {""" + LABELLED_CONTROL_JS + """
+VISIBLE_HTML_JS = """() => {""" + STYLE_HIDES_JS + LABELLED_CONTROL_JS + """
     // The HTML of the page with everything the browser is not painting removed.
     //
     // The whole point is the CLONE. Visibility is a computed property - it comes
@@ -660,7 +680,7 @@ VISIBLE_HTML_JS = """() => {""" + LABELLED_CONTROL_JS + """
         try { s = getComputedStyle(el); r = el.getBoundingClientRect(); } catch (err) { continue; }
         if (!s || !r || typeof r.width !== 'number') continue;
         if (s.display === 'none' || s.visibility === 'hidden'
-            || (parseFloat(s.opacity) === 0 && !labelledControl(el))) {
+            || (transparent(s) && !labelledControl(el))) {
             doomed.push(copy[i]);
             continue;
         }

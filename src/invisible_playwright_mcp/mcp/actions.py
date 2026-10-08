@@ -154,6 +154,57 @@ async def read_text(session, selector: str = "body", max_chars: int = DEFAULT_MA
         "selector to the part you need.]" % (max_chars, len(txt)))
 
 
+#: Where an element sits, as a string that names it and nothing else: its
+#: position among its parent's children at every level up to the document,
+#: with `s` where the climb crosses out of a shadow root to its host. The
+#: snapshot computes it for an element, and `_resolve_nth` for each element
+#: Playwright finds, so the two can be compared without writing to the page.
+_PATH_JS = """
+    function pathOf(el) {
+        const steps = [];
+        let node = el;
+        while (node && node !== document) {
+            const parent = node.parentNode;
+            if (!parent) break;
+            steps.push(Array.prototype.indexOf.call(parent.children || parent.childNodes, node));
+            if (parent instanceof ShadowRoot) { steps.push('s'); node = parent.host; }
+            else node = parent;
+        }
+        return steps.join('/');
+    }
+"""
+
+
+async def _resolve_nth(page, elements: list) -> None:
+    """Give each element the snapshot left ambiguous inside a shadow root its
+    ``>> nth=k``, with ``k`` taken from Playwright's own engine.
+
+    The snapshot cannot know the order in which the engine finds the matches
+    of a chained selector, and must not guess it: a wrong guess clicks another
+    element and reports success. So it hands over the element's path and the
+    selector, and here the engine lists the paths of what it finds, in its
+    order. One call per distinct selector, and only for these elements. An
+    element the engine does not find loses its selector, as before: a missing
+    selector sends the caller to the coordinates, a wrong one does not.
+    """
+    wanted: dict = {}
+    for e in elements:
+        if "_nth_path" in e:
+            wanted.setdefault(e["selector"], []).append(e)
+    for selector, group in wanted.items():
+        try:
+            order = await page.locator(selector).evaluate_all(
+                "els => {" + _PATH_JS + " return els.map(pathOf); }")
+        except Exception:  # noqa: BLE001 - the selector stays out, not the snapshot
+            order = []
+        for e in group:
+            path = e.pop("_nth_path")
+            if path in order:
+                e["selector"] = "%s >> nth=%d" % (selector, order.index(path))
+            else:
+                del e["selector"]
+
+
 #: ⛔ THE SELECTOR COMES FROM `clean.py` AND IS NOT WRITTEN HERE. It was a
 #: hand-typed list of seven roles beside a declaration of nineteen, in another
 #: module, in a language where nothing could compare them - so they drifted,
@@ -168,7 +219,7 @@ SNAPSHOT_JS = """() => {
     // the page, which is a detection surface in a product that exists not to
     // have one. If a stable index is ever wanted, it gets decided in the open.
     const SEL = """ + json.dumps(clean.SNAPSHOT_CSS) + """;
-""" + clean.LABELLED_CONTROL_JS + clean.SECRET_FIELD_JS + """
+""" + clean.STYLE_HIDES_JS + clean.LABELLED_CONTROL_JS + clean.SECRET_FIELD_JS + """
 
     // offsetParent used to stand in for "visible" and was wrong both ways: it is
     // null on every position:fixed element - the cookie banner, the sticky bar,
@@ -204,7 +255,7 @@ SNAPSHOT_JS = """() => {
         if (s.visibility === 'hidden' || s.display === 'none') return false;
         // Transparent is hidden, unless it is a control a shown label names:
         // see clean.LABELLED_CONTROL_JS.
-        if (parseFloat(s.opacity) === 0 && !labelledControl(el)) return false;
+        if (transparent(s) && !labelledControl(el)) return false;
         if (el.disabled === true) return false;
         // Parked off-canvas to the left or above: the ordinary way to hide
         // something without hiding it. Below the fold is NOT excluded, because
@@ -277,22 +328,23 @@ SNAPSHOT_JS = """() => {
         }
         return matches.get(sel);
     }
-    // What Playwright's CSS engine finds for `sel` searched from `host`, in the
-    // order it finds it: the host's light descendants, then its shadow root,
-    // then every open shadow root below either. That is `_queryCSS` with
-    // pierceShadow, transcribed, because the index into this list is what
-    // `>> nth=` counts against, and a different order would aim it at a
-    // different element without failing.
-    function piercedFrom(host, sel) {
-        let out = [];
+    // HOW MANY elements `sel` finds searched from `host`, piercing open shadow
+    // roots as Playwright's CSS engine does. Only the count: a set does not
+    // depend on the order of a search. WHICH position an element holds, the
+    // number `>> nth=` counts against, is asked of Playwright itself in
+    // `_resolve_nth` - until 0.70.13 this function transcribed the engine's
+    // internal order by hand, and an engine that changed it would have aimed
+    // `nth=` at another element without failing.
+    function piercedCount(host, sel) {
+        const found = new Set();
         function query(root) {
-            out = out.concat(Array.from(root.querySelectorAll(sel)));
+            for (const e of root.querySelectorAll(sel)) found.add(e);
             if (root.shadowRoot) query(root.shadowRoot);
             for (const e of root.querySelectorAll('*')) if (e.shadowRoot) query(e.shadowRoot);
         }
-        try { query(host); } catch (err) { out = []; }
-        return out;
-    }
+        try { query(host); } catch (err) { return 0; }
+        return found.size;
+    }""" + _PATH_JS + """
     function cssq(s) { return (window.CSS && CSS.escape) ? CSS.escape(s) : s.replace(/[^\\w-]/g, '\\\\$&'); }
     // Single quotes inside the selector, because this string is about to be
     // serialized as JSON and every double quote in it would come back as two
@@ -337,12 +389,12 @@ SNAPSHOT_JS = """() => {
         if (root && root !== document && root.host) {
             const outer = handle(root.host, undefined);
             if (!outer) return null;
-            const inner = piercedFrom(root.host, base);
-            const k = inner.indexOf(el);
-            if (k < 0) return null;
+            const count = piercedCount(root.host, base);
+            if (count < 1) return null;
             const chained = outer.sel + ' >> ' + base;
-            return {sel: inner.length === 1 ? chained : chained + ' >> nth=' + k,
-                    fromHref: fromHref};
+            if (count === 1) return {sel: chained, fromHref: fromHref};
+            // Ambiguous: the position is Playwright's to say (`_resolve_nth`).
+            return {sel: chained, fromHref: fromHref, nthPath: pathOf(el)};
         }
         const n = nodesFor(base);
         if (n.length === 1) return {sel: base, fromHref: fromHref};
@@ -407,6 +459,7 @@ SNAPSHOT_JS = """() => {
         // instead of a conditional one, which is the kind a caller gets wrong.
         const h = handle(el, href);
         if (h) e.selector = h.sel;
+        if (h && h.nthPath) e._nth_path = h.nthPath;
         // The href is dropped when the selector already carries it, which is
         // the whole reason this stayed affordable. Measured over 969 elements
         // on real pages: emitting the selector cost +47.2% of the payload, and
@@ -455,7 +508,9 @@ async def snapshot(session, max_chars: int = 0) -> str:
     count - keeps the answer about the page rather than about its longest
     dropdown.
     """
-    d = await session.page().evaluate(SNAPSHOT_JS)
+    page = session.page()
+    d = await page.evaluate(SNAPSHOT_JS)
+    await _resolve_nth(page, d.get("interactive_elements", []))
     if not max_chars:
         return json.dumps(d)
     elements = d.pop("interactive_elements", [])
@@ -914,13 +969,22 @@ UPLOAD_MAX_FILES = 20
 #: per-file limit would be a gigabyte copied and held for one call.
 UPLOAD_MAX_TOTAL_BYTES = 100 * 1024 * 1024
 
-_FILE_INPUT_JS = """el => ({
-  file: el.tagName === "INPUT" && (el.type || "").toLowerCase() === "file",
-  multiple: !!el.multiple,
-  shown: (() => { const r = el.getBoundingClientRect(), s = getComputedStyle(el);
-    return r.width > 1 && r.height > 1 && s.visibility !== "hidden"
-        && s.display !== "none" && +s.opacity > 0.01; })()
-})"""
+#: A hand aims at a box, so an input of 1px or less sends it to the label
+#: (`_opener`); what the style hides is clean.STYLE_HIDES_JS, as everywhere.
+_HAND_CAN_AIM_JS = clean.STYLE_HIDES_JS + """
+  function handCanAim(el) {
+    const r = el.getBoundingClientRect();
+    return r.width > 1 && r.height > 1 && !styleHides(getComputedStyle(el));
+  }
+"""
+
+_FILE_INPUT_JS = """el => {""" + _HAND_CAN_AIM_JS + """
+  return {
+    file: el.tagName === "INPUT" && (el.type || "").toLowerCase() === "file",
+    multiple: !!el.multiple,
+    shown: handCanAim(el),
+  };
+}"""
 _FILE_NAMES_JS = "el => el.files ? Array.from(el.files, f => f.name) : null"
 
 
@@ -1155,12 +1219,9 @@ def _expire_snapshots() -> None:
 #: see, as `for` (pointing at it by id) or `wrap` (the input inside it), with
 #: the position among the labels that share the same `for`. None when no label
 #: is shown, which leaves the caller to name the button that opens it.
-_OPENER_JS = """el => {
-  const shown = l => { const r = l.getBoundingClientRect(), s = getComputedStyle(l);
-    return r.width > 1 && r.height > 1 && s.visibility !== "hidden"
-        && s.display !== "none" && +s.opacity > 0.01; };
+_OPENER_JS = """el => {""" + _HAND_CAN_AIM_JS + """
   for (const l of (el.labels || [])) {
-    if (!shown(l)) continue;
+    if (!handCanAim(l)) continue;
     if (l.contains(el)) return {how: "wrap"};
     if (l.htmlFor && l.htmlFor === el.id) {
       const root = l.getRootNode();
