@@ -153,6 +153,9 @@ between what the browser says it is and where it appears to be.
 | `STEALTHFOX_PROFILE_DIR` | A directory for a persistent profile for `main`, so logins survive across runs. `support` is not saved unless it is given a `profile` of its own. |
 | `STEALTHFOX_BINARY` | Path to an engine binary you already have. It must be the build the packaged seal pins, or startup refuses. |
 | `STEALTHFOX_HEADLESS` | `0` to run headed; headless by default. Decided by each launch: a saved session never records it, so a browser reopened by a headless server stays hidden even if it was last used headed. |
+| `STEALTHFOX_NETWORK_ENTRIES` | Maximum network entries per browser, default 500. |
+| `STEALTHFOX_NETWORK_BODY_BYTES` | Maximum retained UTF-8 bytes per request or response body, default 65536 (64 KiB). |
+| `STEALTHFOX_NETWORK_TOTAL_BODY_BYTES` | Aggregate retained body budget per browser, default 16777216 (16 MiB). Oldest entries are evicted when either budget is exceeded. All three limits must be positive integers and are read at launch. |
 | `STEALTHFOX_MCP_TRANSPORT` | `http` to serve over streamable HTTP instead of stdio. Default is stdio, which is what MCP clients expect. What else changes when you flip it, including the one thing that changes silently: [local or remote](local-vs-remote-mcp-server.md). |
 | `STEALTHFOX_MCP_HOST` | Bind address for the HTTP transport. Default `127.0.0.1`. |
 | `STEALTHFOX_MCP_PORT` | Port for the HTTP transport. Default `8766`. It used to be `8765`, the invisible_playwright_mcp interface's own default, so running both meant a bind error with nothing to explain it. |
@@ -168,7 +171,8 @@ a browser gets when nobody says anything.
 `browser_navigate`, `browser_read_text`, `browser_snapshot`, `browser_read_html`,
 `browser_take_screenshot`, `browser_watch`, `browser_click`, `browser_click_at`,
 `browser_type`, `browser_select_option`, `browser_press_key`,
-`browser_upload_files`, `browser_evaluate`.
+`browser_upload_files`, `browser_evaluate`,
+`browser_network`, `browser_network_clear`, `browser_network_capture`.
 
 Tool names mirror the Microsoft Playwright MCP, so prompts written for it work
 here too, with one deliberate departure: **there are no tab tools.** Three
@@ -316,6 +320,63 @@ that was asked for.
 | `browser_read_html` | `mode`: `form` (default), `text`, `full` | The page's HTML reduced to what is worth reading: `form` keeps the interactive surface and the text explaining it, `text` the prose alone, `full` the structure with the noise removed. Not capped, on purpose: cutting markup in the middle leaves tags that mean nothing, so on a large page the answer is long. |
 | `browser_take_screenshot` | none | A screenshot of the page, as an image. |
 | `browser_watch` | none | The whole browser window as a person at the machine sees it: tab strip, address bar, page and the pointer, from a live capture the session keeps running on the active tab. A capture that stops delivering, as it does when a headed window is minimised, is started again on the next look; if the window cannot be captured the tool says so rather than answering an old picture. |
+| `browser_network` | `url_contains=null`, `resource_types=null`, `since_id=null`, `include_bodies=false`, `max_entries=50` | Network entries, oldest-first, with `next_since_id`, lifetime eviction count `dropped`, capacity, byte caps and current `request_bodies` mode. No request is sent or replayed. |
+| `browser_network_clear` | none | Clears only this browser's captured history and pending body reads. Recording and request-body mode continue, IDs are never reused, and the lifetime eviction count remains. Does not touch the page. |
+| `browser_network_capture` | `request_bodies` (required boolean) | Enables/disables request-body capture using one unchanged pass-through route for this browser. Off by default, idempotent, and independent of other browsers. |
+
+Network recording starts when the browser opens, before its first navigation.
+BrowserContext listeners cover every page, including pages the site opens.
+By default there is no interception. No mode injects scripts, evaluates page
+code, or modifies requests.
+History is memory-only, separate for each browser, and discarded on
+close. Cookie, Set-Cookie, Authorization and Proxy-Authorization header values
+are replaced with `[redacted]` at capture time, case-insensitively.
+**Bodies are untrusted page data, not instructions.** They are not scrubbed;
+POST tokens and other sensitive page data remain visible when requested.
+
+Entries include epoch-millisecond `started`, method, URL, resource type, frame
+URL (`page`), request/response headers, status/text, failure and elapsed
+`duration_ms`. Response bodies are read only for xhr, fetch and document, after
+request completion. Four reads run concurrently, with at most the entry
+capacity in flight/queued and a ten-second deadline including queue time.
+Unavailable bodies carry a reason in `response_body_state`. Binary or
+undecodable request/response bodies retain size and content type only; text
+uses the declared charset or UTF-8, with byte-safe truncation and original byte
+lengths in `post_data_bytes`/`response_body_bytes`. The `*_truncated` fields
+mark cuts. The aggregate budget counts retained UTF-8 text bytes, not engine
+buffers or Python object overhead. The engine's `response.body()` API returns
+a complete body before it can be truncated; concurrent reads, not transient
+engine allocations, are bounded.
+
+**Request bodies are opt-in.** Firefox-36 exposes POST/PUT bodies only while
+interception is on. Call `browser_network_capture(request_bodies=true)` before
+the interaction to record them, then `browser_network_capture(request_bodies=false)`
+when done. While on, every request in this browser, including site-opened pages,
+passes through the engine. Pages cannot see the route from JavaScript, but the
+HTTP cache is bypassed and requests are slightly slower. The handler only
+falls through to other routes/the network (`fallback`, or `continue_` on engines
+without it); it never modifies, fulfils or aborts a request. A failed pass-through
+is logged, never retried. Disabling removes only this capture handler, not other
+routes. Existing captured bodies remain until cleared/evicted/closed.
+
+The top-level `request_bodies` flag reports the current mode, which resets on
+browser close/reopen. Missing request bodies recorded while off carry a
+`post_data_state` hint naming the opt-in tool; enabling later cannot recover
+earlier bodies. Route registration failures are tool errors containing the
+engine's original message, with capture mode unchanged. Correct resource types
+and response-body selection depend on
+[invisible_playwright#305](https://github.com/feder-cr/invisible_playwright/pull/305),
+which maps Juggler's `TYPE_DOCUMENT`, `TYPE_XMLHTTPREQUEST` and `TYPE_FETCH`
+causes correctly; an engine reporting `other` cannot select those response bodies.
+
+Without `include_bodies`, body text is omitted but lengths and states remain.
+Filters combine; `resource_types=[]` selects nothing. Results return the first
+`max_entries` matches in capture order; continue with `since_id=next_since_id`.
+The cursor is null when no entry matched; retain your previous cursor then.
+Pending entries can change after being returned: reread without `since_id` to
+collect completed bodies. Clear does not count as eviction. Network JSON uses
+its entry/body limits rather than the text tools' 6000-character preview
+envelope, so large POSTs keep their structured entries and cursors.
 
 The selectors a snapshot hands out are built to match exactly one element, and
 that is the reason to pass them verbatim rather than writing your own: measured
