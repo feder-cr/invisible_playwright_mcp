@@ -176,33 +176,59 @@ _PATH_JS = """
 
 
 async def _resolve_nth(page, elements: list) -> None:
-    """Give each element the snapshot left ambiguous inside a shadow root its
-    ``>> nth=k``, with ``k`` taken from Playwright's own engine.
+    """Number each element whose selector the snapshot found ambiguous, with
+    the position taken from Playwright's own engine: ``:nth-match(sel, n)`` in
+    the document, ``sel >> nth=k`` inside a shadow root.
 
-    The snapshot cannot know the order in which the engine finds the matches
-    of a chained selector, and must not guess it: a wrong guess clicks another
-    element and reports success. So it hands over the element's path and the
-    selector, and here the engine lists the paths of what it finds, in its
-    order. One call per distinct selector, and only for these elements. An
-    element the engine does not find loses its selector, as before: a missing
-    selector sends the caller to the coordinates, a wrong one does not.
+    The snapshot cannot know the order in which the engine lists the matches,
+    and must not guess it: a wrong guess clicks another element and reports
+    success. So it hands over the element's path and the selector, and here the
+    engine lists the paths of what it finds, in its order. One call per
+    distinct ambiguous selector. An element the engine does not find loses its
+    selector: a missing selector sends the caller to the coordinates, a wrong
+    one does not.
     """
-    wanted: dict = {}
-    for e in elements:
-        if "_nth_path" in e:
-            wanted.setdefault(e["selector"], []).append(e)
-    for selector, group in wanted.items():
+    async def order_of(selector):
         try:
-            order = await page.locator(selector).evaluate_all(
-                "els => {" + _PATH_JS + " return els.map(pathOf); }")
+            return await page.locator(selector).evaluate_all(PATHS_OF_JS)
         except Exception:  # noqa: BLE001 - the selector stays out, not the snapshot
-            order = []
-        for e in group:
-            path = e.pop("_nth_path")
-            if path in order:
-                e["selector"] = "%s >> nth=%d" % (selector, order.index(path))
-            else:
-                del e["selector"]
+            return []
+
+    # Asked together: each answer is a round trip to the engine. Measured on a
+    # page of 600 elements with 150 ambiguous selectors: one after another they
+    # added 630 ms to a 70 ms snapshot, together 300 ms. They only read, so
+    # their order does not matter. One question for all of them would mean
+    # relying on how the engine orders a selector LIST, which is the guess
+    # about its internals this function exists to stop making.
+    selectors = ambiguous_selectors(elements)
+    found = await asyncio.gather(*(order_of(s) for s in selectors))
+    number_matches(elements, dict(zip(selectors, found)))
+
+
+#: Run by the engine on what it finds for a selector: their paths, in its order.
+PATHS_OF_JS = "els => {" + _PATH_JS + " return els.map(pathOf); }"
+
+
+def ambiguous_selectors(elements: list) -> list:
+    """The selectors the snapshot could not number, once each, in order."""
+    return list(dict.fromkeys(e["selector"] for e in elements if "_nth_path" in e))
+
+
+def number_matches(elements: list, orders: dict) -> None:
+    """Number each ambiguous element from ``orders`` (selector -> the paths the
+    engine found, in its order). Pure, so the sync tests and the tool share it."""
+    for e in elements:
+        if "_nth_path" not in e:
+            continue
+        selector = e["selector"]
+        order = orders.get(selector) or []
+        path, kind = e.pop("_nth_path"), e.pop("_nth_kind", "chain")
+        if path not in order:
+            del e["selector"]
+        elif kind == "match":
+            e["selector"] = ":nth-match(%s, %d)" % (selector, order.index(path) + 1)
+        else:
+            e["selector"] = "%s >> nth=%d" % (selector, order.index(path))
 
 
 #: ⛔ THE SELECTOR COMES FROM `clean.py` AND IS NOT WRITTEN HERE. It was a
@@ -316,34 +342,29 @@ SNAPSHOT_JS = """() => {
     // and nothing is logged: it just quietly does the wrong thing.
     //
     // `:nth-match(sel, n)` is Playwright's own syntax and it resolves through
-    // this engine, verified rather than assumed. The count comes from the whole
-    // document, not from this list, because an element filtered out here for
-    // being invisible still occupies a position in querySelectorAll.
-    const matches = new Map();
-    function nodesFor(sel) {
-        if (!matches.has(sel)) {
-            let n = [];
-            try { n = Array.from(document.querySelectorAll(sel)); } catch (err) { n = []; }
-            matches.set(sel, n);
-        }
-        return matches.get(sel);
-    }
-    // HOW MANY elements `sel` finds searched from `host`, piercing open shadow
-    // roots as Playwright's CSS engine does. Only the count: a set does not
-    // depend on the order of a search. WHICH position an element holds, the
-    // number `>> nth=` counts against, is asked of Playwright itself in
-    // `_resolve_nth` - until 0.70.13 this function transcribed the engine's
-    // internal order by hand, and an engine that changed it would have aimed
-    // `nth=` at another element without failing.
-    function piercedCount(host, sel) {
+    // this engine, verified rather than assumed. The matches are counted over
+    // the whole document, not over this list, because an element filtered out
+    // here for being invisible still occupies a position.
+    //
+    // WHAT `sel` finds searched from `host` (the document, or a shadow host),
+    // piercing open shadow roots as Playwright's CSS engine does. Only the SET:
+    // whether a selector is unique, and whether this element is among its
+    // matches, do not depend on the order of a search. WHICH position it holds,
+    // the `n` of `:nth-match` or the `k` of `>> nth=`, is asked of the engine in
+    // `_resolve_nth`. ⛔ Until 0.70.13 both were this file's own guesses: the
+    // document case counted with document.querySelectorAll, which stops at
+    // every shadow boundary, so `[aria-label='X']` was "unique" while the
+    // engine found a second one inside a component; and the shadow case
+    // transcribed the engine's order by hand.
+    function piercedSet(host, sel) {
         const found = new Set();
         function query(root) {
             for (const e of root.querySelectorAll(sel)) found.add(e);
             if (root.shadowRoot) query(root.shadowRoot);
             for (const e of root.querySelectorAll('*')) if (e.shadowRoot) query(e.shadowRoot);
         }
-        try { query(host); } catch (err) { return 0; }
-        return found.size;
+        try { query(host); } catch (err) { return new Set(); }
+        return found;
     }""" + _PATH_JS + """
     function cssq(s) { return (window.CSS && CSS.escape) ? CSS.escape(s) : s.replace(/[^\\w-]/g, '\\\\$&'); }
     // Single quotes inside the selector, because this string is about to be
@@ -389,18 +410,17 @@ SNAPSHOT_JS = """() => {
         if (root && root !== document && root.host) {
             const outer = handle(root.host, undefined);
             if (!outer) return null;
-            const count = piercedCount(root.host, base);
-            if (count < 1) return null;
+            const inner = piercedSet(root.host, base);
+            if (!inner.has(el)) return null;
             const chained = outer.sel + ' >> ' + base;
-            if (count === 1) return {sel: chained, fromHref: fromHref};
-            // Ambiguous: the position is Playwright's to say (`_resolve_nth`).
-            return {sel: chained, fromHref: fromHref, nthPath: pathOf(el)};
+            if (inner.size === 1) return {sel: chained, fromHref: fromHref};
+            // Ambiguous: the position is the engine's to say (`_resolve_nth`).
+            return {sel: chained, fromHref: fromHref, nthPath: pathOf(el), nthKind: 'chain'};
         }
-        const n = nodesFor(base);
-        if (n.length === 1) return {sel: base, fromHref: fromHref};
-        const i = n.indexOf(el);
-        if (i < 0) return null;
-        return {sel: ':nth-match(' + base + ', ' + (i + 1) + ')', fromHref: fromHref};
+        const all = piercedSet(document, base);
+        if (!all.has(el)) return null;
+        if (all.size === 1) return {sel: base, fromHref: fromHref};
+        return {sel: base, fromHref: fromHref, nthPath: pathOf(el), nthKind: 'match'};
     }
 
     // No deduplication. It looked free - the same link in the header and in
@@ -459,7 +479,7 @@ SNAPSHOT_JS = """() => {
         // instead of a conditional one, which is the kind a caller gets wrong.
         const h = handle(el, href);
         if (h) e.selector = h.sel;
-        if (h && h.nthPath) e._nth_path = h.nthPath;
+        if (h && h.nthPath) { e._nth_path = h.nthPath; e._nth_kind = h.nthKind; }
         // The href is dropped when the selector already carries it, which is
         // the whole reason this stayed affordable. Measured over 969 elements
         // on real pages: emitting the selector cost +47.2% of the payload, and

@@ -86,8 +86,19 @@ PAGE = b"""<!doctype html>
     }
   }
   customElements.define('x-pair', Pair);
+  class Twin extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: 'open'}).innerHTML =
+        '<button aria-label="Twin" type="button" ' +
+        'onclick="document.title=\\'shadow twin clicked\\'">in</button>';
+    }
+  }
+  customElements.define('x-twin', Twin);
 </script>
 <x-pair id="pair"></x-pair>
+<x-twin id="twin"></x-twin>
+<button aria-label="Twin" type="button" onclick="document.title='light twin clicked'">out</button>
 <x-field id="firstName" label="First Name"></x-field>
 <x-field id="lastName" label="Last Name"></x-field>
 <x-pick id="state"></x-pick>
@@ -197,6 +208,22 @@ def test_two_alike_under_one_host_each_get_the_selector_that_reaches_them(run):
     assert set(pair) == {"A", "B"}, pair
     assert all(" >> nth=" in sel for sel in pair.values()), pair
     assert got == {"A": "A clicked", "B": "B clicked"}, (pair, got)
+
+
+@pytest.mark.e2e
+def test_a_handle_in_the_document_counts_the_matches_inside_components(run):
+    """Known-bad until 0.70.13: the document's uniqueness check used
+    document.querySelectorAll, which stops at shadow roots, so the button
+    outside was handed `[aria-label='Twin']` as unique while the engine also
+    finds the one inside x-twin, and the click could land on that one."""
+    async def body(s):
+        snap = json.loads(await actions.snapshot(s))["interactive_elements"]
+        out = next(e for e in snap if e.get("text") == "out")
+        await actions.click(s, out["selector"])
+        return out["selector"], await s.page().title()
+    selector, title = run(body)
+    assert selector.startswith(":nth-match([aria-label='Twin'], "), selector
+    assert title == "light twin clicked", (selector, title)
 
 
 async def test_the_position_is_the_engines_not_the_documents():

@@ -47,7 +47,10 @@ LAST = "    // No deduplication."
 SHIM = """
 const window = {};
 let DOC = {};
-const document = { querySelectorAll: (sel) => { if(!(sel in DOC)) throw new Error('unknown selector ' + sel); return DOC[sel]; } };
+const document = { querySelectorAll: (sel) => {
+  // '*' is how the count walks into shadow roots; none of these nodes has one.
+  if (sel === '*') return [...new Set(Object.values(DOC).flat())];
+  if(!(sel in DOC)) throw new Error('unknown selector ' + sel); return DOC[sel]; } };
 function node(tag, attrs){
   const el = { tagName: tag.toUpperCase(), id: attrs.id || '', name: attrs.name || '',
                getAttribute: (k) => (k in attrs ? attrs[k] : null) };
@@ -149,18 +152,25 @@ def test_a_selector_that_matches_several_is_numbered_from_one():
       DOC = {"a[href='/dup']": [a, b, c]};
       const stranger = node('a', {});
       process.stdout.write(JSON.stringify({
-        first: handle(a, '/dup').sel,
-        third: handle(c, '/dup').sel,
+        first: handle(a, '/dup'),
         absent: handle(stranger, '/dup'),
       }));
     """)
-    assert got["first"] == ":nth-match(a[href='/dup'], 1)", (
-        "a selector matching three nodes was handed out bare: %r" % (got,))
-    assert got["third"] == ":nth-match(a[href='/dup'], 3)", (
-        "the index is not the element's own position, counted from one: %r" % (got,))
+    # The script does not number: it hands the bare selector and the element's
+    # path over, and the ENGINE says the position (see the test below).
+    assert got["first"]["sel"] == "a[href='/dup']" and got["first"]["nthKind"] == "match", (
+        "a selector matching three nodes was not handed over to be numbered: %r" % (got,))
+    assert "nthPath" in got["first"], got
     assert got["absent"] is None, (
         "an element the document does not hold was given a number anyway, "
         "which addresses somebody else: %r" % (got,))
+
+    # The numbering, counted from one, at the position the engine reports.
+    elements = [{"selector": "a[href='/dup']", "_nth_path": p, "_nth_kind": "match"}
+                for p in ("2/0", "0/0", "9/9")]
+    actions.number_matches(elements, {"a[href='/dup']": ["0/0", "1/0", "2/0"]})
+    assert [e.get("selector") for e in elements] == [
+        ":nth-match(a[href='/dup'], 3)", ":nth-match(a[href='/dup'], 1)", None], elements
 
 
 def test_a_quote_or_a_backslash_in_a_value_does_not_break_out_of_the_selector():
