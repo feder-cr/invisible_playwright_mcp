@@ -17,7 +17,8 @@ from invisible_playwright_mcp.mcp import server
 
 #: The tools that act on the piece of work rather than on a page: they call
 #: `work.open`, `work.close`, `work.listing`, `work.status`.
-NOT_DRIVING_A_PAGE = {"browser_open", "browser_close", "browser_list", "browser_status"}
+NOT_DRIVING_A_PAGE = {"browser_open", "browser_close", "browser_list", "browser_status",
+                      "browser_network", "browser_network_clear", "browser_network_capture"}
 
 #: The doors to a page. All three end in the same `Work._act`, which is where
 #: "what a browser has to be before a tool may use it" is known: `acting` for
@@ -28,7 +29,7 @@ FUNNEL = {"acting", "reading", "typing"}
 
 #: What a tool may reach on `work`. Everything that drives a page goes through
 #: the funnel; nothing reaches the sessions or the dicts behind it.
-ALLOWED = FUNNEL | {"open", "close", "listing", "status"}
+ALLOWED = FUNNEL | {"open", "close", "listing", "status", "network", "network_clear", "network_capture"}
 
 
 def _tools():

@@ -46,6 +46,7 @@ async def test_server_registers_expected_tools():
         # browsers is still `browser_list`; deleting a whole piece of work is
         # done by whoever spawned this process closing it, not by a tool call.
         "browser_status",
+        "browser_network", "browser_network_clear", "browser_network_capture",
         # Added 2026-10-01: a file input took nothing any tool could give it,
         # so an upload was the end of the road - or a DataTransfer built in
         # script, which is the untrusted change this package exists to avoid.

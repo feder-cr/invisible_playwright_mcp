@@ -16,7 +16,7 @@ from pathlib import Path
 import pytest
 from invisible_playwright.async_api import TargetClosedError
 
-from invisible_playwright_mcp.mcp import GONE, NOT_OPEN, actions, server, store
+from invisible_playwright_mcp.mcp import GONE, NOT_OPEN, actions, network, server, store
 from invisible_playwright_mcp.mcp.work import REMEMBERED, Work, profile_holder
 
 
@@ -34,11 +34,13 @@ class _Recording:
         #: stays `usable` and only the ROUND TRIP raises, exactly as there.
         self.dead = False
         self.urls: list = []
+        self.network = network.Network(kwargs.get("network_limits"))
 
     async def start(self):
         pass
 
     async def close(self):
+        await self.network.close()
         self.closed = True
 
     def is_usable(self):
@@ -118,6 +120,9 @@ EVERY_TOOL = [
     ("browser_upload_files", {"selector": "#f", "paths": ["/tmp/a.pdf"]}),
     ("browser_evaluate", {"expression": "1"}),
     ("browser_status", {}),
+    ("browser_network", {}),
+    ("browser_network_clear", {}),
+    ("browser_network_capture", {"request_bodies": True}),
 ]
 
 
