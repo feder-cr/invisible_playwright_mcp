@@ -56,14 +56,16 @@ def test_the_snapshot_emits_a_selector_field():
 
 
 def test_the_handle_counts_matches_before_trusting_a_selector():
-    """The count has to come from the document. Counting within the snapshot's
-    own list undercounts, because an element filtered out here for being
-    invisible still occupies a position in querySelectorAll, and the index would
-    then point at the wrong node."""
+    """The count has to come from the whole document, shadow roots included,
+    as the engine searches it. Counting within the snapshot's own list
+    undercounts (an invisible element still occupies a position), and counting
+    with document.querySelectorAll stops at every shadow boundary the engine
+    crosses. The position itself is the engine's (`number_matches`)."""
     js = _code(actions.SNAPSHOT_JS)
-    assert "querySelectorAll" in js
-    assert "nth-match" in js, "ambiguity is no longer disambiguated"
-    assert "indexOf" in js, "the position among matches is no longer computed"
+    assert "piercedSet(document, base)" in js, "the document count stops at shadow roots"
+    assert "nthPath" in js, "ambiguity is no longer handed to the engine"
+    import inspect
+    assert ":nth-match(" in inspect.getsource(actions.number_matches)
 
 
 def test_attribute_values_are_escaped_into_the_selector():
@@ -106,7 +108,12 @@ def _load(page, body):
 
     page.goto("data:text/html," + quote(f"<html><body>{body}</body></html>"))
     page.wait_for_timeout(250)
-    return page.evaluate(actions.SNAPSHOT_JS)["interactive_elements"]
+    elements = page.evaluate(actions.SNAPSHOT_JS)["interactive_elements"]
+    # The numbering the tool does after the script, through the same code.
+    actions.number_matches(elements, {
+        s: page.locator(s).evaluate_all(actions.PATHS_OF_JS)
+        for s in actions.ambiguous_selectors(elements)})
+    return elements
 
 
 @pytest.mark.e2e

@@ -62,7 +62,43 @@ PAGE = b"""<!doctype html>
     }
   }
   customElements.define('x-sealed', Sealed);
+  // Three buttons with one handle under one host: A and B in its shadow root,
+  // C inside a component nested between them. In tree order C sits between A
+  // and B; the engine lists a root's own matches before the roots nested in
+  // it, so it says A, B, C. Which of them is `nth=1` is the engine's to say.
+  class Deep extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: 'open'}).innerHTML =
+        '<button aria-label="Same" type="button" ' +
+        'onclick="document.title=\\'C clicked\\'">C</button>';
+    }
+  }
+  customElements.define('x-deep', Deep);
+  class Pair extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: 'open'}).innerHTML =
+        '<button aria-label="Same" type="button" ' +
+        'onclick="document.title=\\'A clicked\\'">A</button><x-deep></x-deep>' +
+        '<button aria-label="Same" type="button" ' +
+        'onclick="document.title=\\'B clicked\\'">B</button>';
+    }
+  }
+  customElements.define('x-pair', Pair);
+  class Twin extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({mode: 'open'}).innerHTML =
+        '<button aria-label="Twin" type="button" ' +
+        'onclick="document.title=\\'shadow twin clicked\\'">in</button>';
+    }
+  }
+  customElements.define('x-twin', Twin);
 </script>
+<x-pair id="pair"></x-pair>
+<x-twin id="twin"></x-twin>
+<button aria-label="Twin" type="button" onclick="document.title='light twin clicked'">out</button>
 <x-field id="firstName" label="First Name"></x-field>
 <x-field id="lastName" label="Last Name"></x-field>
 <x-pick id="state"></x-pick>
@@ -152,6 +188,67 @@ def test_the_snapshot_lists_controls_inside_open_shadow_roots(run):
                    "#card >> #go", "#plain"):
         assert wanted in sels, "missing %s; got %s" % (wanted, sorted(map(str, sels)))
     assert sels["#state >> #select"]["tag"] == "select"
+
+
+@pytest.mark.e2e
+def test_two_alike_under_one_host_each_get_the_selector_that_reaches_them(run):
+    """Known-bad until 0.70.13: the `nth=` of an ambiguous selector inside a
+    shadow root came from a hand copy of the engine's search order. Now the
+    engine says the order; each selector must click its own button."""
+    async def body(s):
+        snap = json.loads(await actions.snapshot(s))["interactive_elements"]
+        pair = {e["text"]: e.get("selector") for e in snap
+                if str(e.get("selector", "")).startswith("#pair >> ")}
+        got = {}
+        for label, sel in pair.items():
+            await actions.click(s, sel)
+            got[label] = await s.page().title()
+        return pair, got
+    pair, got = run(body)
+    assert set(pair) == {"A", "B"}, pair
+    assert all(" >> nth=" in sel for sel in pair.values()), pair
+    assert got == {"A": "A clicked", "B": "B clicked"}, (pair, got)
+
+
+@pytest.mark.e2e
+def test_a_handle_in_the_document_counts_the_matches_inside_components(run):
+    """Known-bad until 0.70.13: the document's uniqueness check used
+    document.querySelectorAll, which stops at shadow roots, so the button
+    outside was handed `[aria-label='Twin']` as unique while the engine also
+    finds the one inside x-twin, and the click could land on that one."""
+    async def body(s):
+        snap = json.loads(await actions.snapshot(s))["interactive_elements"]
+        out = next(e for e in snap if e.get("text") == "out")
+        await actions.click(s, out["selector"])
+        return out["selector"], await s.page().title()
+    selector, title = run(body)
+    assert selector.startswith(":nth-match([aria-label='Twin'], "), selector
+    assert title == "light twin clicked", (selector, title)
+
+
+async def test_the_position_is_the_engines_not_the_documents():
+    """`_resolve_nth` takes `k` from the order the engine reports, whatever
+    order the document has; an element the engine does not find loses its
+    selector rather than getting a wrong one."""
+    class Locator:
+        def __init__(self, order):
+            self.order = order
+
+        async def evaluate_all(self, js):
+            assert "pathOf" in js
+            return self.order
+
+    class Page:
+        def locator(self, sel):
+            return Locator(["0/s/3", "1/s/3"] if sel == "#h >> [aria-label='x']" else [])
+
+    elements = [{"selector": "#h >> [aria-label='x']", "_nth_path": "1/s/3"},
+                {"selector": "#h >> [aria-label='x']", "_nth_path": "0/s/3"},
+                {"selector": "#gone >> [aria-label='y']", "_nth_path": "2/s/1"}]
+    await actions._resolve_nth(Page(), elements)
+    assert elements[0] == {"selector": "#h >> [aria-label='x'] >> nth=1"}
+    assert elements[1] == {"selector": "#h >> [aria-label='x'] >> nth=0"}
+    assert elements[2] == {}
 
 
 @pytest.mark.e2e

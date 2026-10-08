@@ -154,6 +154,83 @@ async def read_text(session, selector: str = "body", max_chars: int = DEFAULT_MA
         "selector to the part you need.]" % (max_chars, len(txt)))
 
 
+#: Where an element sits, as a string that names it and nothing else: its
+#: position among its parent's children at every level up to the document,
+#: with `s` where the climb crosses out of a shadow root to its host. The
+#: snapshot computes it for an element, and `_resolve_nth` for each element
+#: Playwright finds, so the two can be compared without writing to the page.
+_PATH_JS = """
+    function pathOf(el) {
+        const steps = [];
+        let node = el;
+        while (node && node !== document) {
+            const parent = node.parentNode;
+            if (!parent) break;
+            steps.push(Array.prototype.indexOf.call(parent.children || parent.childNodes, node));
+            if (parent instanceof ShadowRoot) { steps.push('s'); node = parent.host; }
+            else node = parent;
+        }
+        return steps.join('/');
+    }
+"""
+
+
+async def _resolve_nth(page, elements: list) -> None:
+    """Number each element whose selector the snapshot found ambiguous, with
+    the position taken from Playwright's own engine: ``:nth-match(sel, n)`` in
+    the document, ``sel >> nth=k`` inside a shadow root.
+
+    The snapshot cannot know the order in which the engine lists the matches,
+    and must not guess it: a wrong guess clicks another element and reports
+    success. So it hands over the element's path and the selector, and here the
+    engine lists the paths of what it finds, in its order. One call per
+    distinct ambiguous selector. An element the engine does not find loses its
+    selector: a missing selector sends the caller to the coordinates, a wrong
+    one does not.
+    """
+    async def order_of(selector):
+        try:
+            return await page.locator(selector).evaluate_all(PATHS_OF_JS)
+        except Exception:  # noqa: BLE001 - the selector stays out, not the snapshot
+            return []
+
+    # Asked together: each answer is a round trip to the engine. Measured on a
+    # page of 600 elements with 150 ambiguous selectors: one after another they
+    # added 630 ms to a 70 ms snapshot, together 300 ms. They only read, so
+    # their order does not matter. One question for all of them would mean
+    # relying on how the engine orders a selector LIST, which is the guess
+    # about its internals this function exists to stop making.
+    selectors = ambiguous_selectors(elements)
+    found = await asyncio.gather(*(order_of(s) for s in selectors))
+    number_matches(elements, dict(zip(selectors, found)))
+
+
+#: Run by the engine on what it finds for a selector: their paths, in its order.
+PATHS_OF_JS = "els => {" + _PATH_JS + " return els.map(pathOf); }"
+
+
+def ambiguous_selectors(elements: list) -> list:
+    """The selectors the snapshot could not number, once each, in order."""
+    return list(dict.fromkeys(e["selector"] for e in elements if "_nth_path" in e))
+
+
+def number_matches(elements: list, orders: dict) -> None:
+    """Number each ambiguous element from ``orders`` (selector -> the paths the
+    engine found, in its order). Pure, so the sync tests and the tool share it."""
+    for e in elements:
+        if "_nth_path" not in e:
+            continue
+        selector = e["selector"]
+        order = orders.get(selector) or []
+        path, kind = e.pop("_nth_path"), e.pop("_nth_kind", "chain")
+        if path not in order:
+            del e["selector"]
+        elif kind == "match":
+            e["selector"] = ":nth-match(%s, %d)" % (selector, order.index(path) + 1)
+        else:
+            e["selector"] = "%s >> nth=%d" % (selector, order.index(path))
+
+
 #: ⛔ THE SELECTOR COMES FROM `clean.py` AND IS NOT WRITTEN HERE. It was a
 #: hand-typed list of seven roles beside a declaration of nineteen, in another
 #: module, in a language where nothing could compare them - so they drifted,
@@ -168,7 +245,7 @@ SNAPSHOT_JS = """() => {
     // the page, which is a detection surface in a product that exists not to
     // have one. If a stable index is ever wanted, it gets decided in the open.
     const SEL = """ + json.dumps(clean.SNAPSHOT_CSS) + """;
-""" + clean.LABELLED_CONTROL_JS + clean.SECRET_FIELD_JS + """
+""" + clean.STYLE_HIDES_JS + clean.LABELLED_CONTROL_JS + clean.SECRET_FIELD_JS + """
 
     // offsetParent used to stand in for "visible" and was wrong both ways: it is
     // null on every position:fixed element - the cookie banner, the sticky bar,
@@ -204,7 +281,7 @@ SNAPSHOT_JS = """() => {
         if (s.visibility === 'hidden' || s.display === 'none') return false;
         // Transparent is hidden, unless it is a control a shown label names:
         // see clean.LABELLED_CONTROL_JS.
-        if (parseFloat(s.opacity) === 0 && !labelledControl(el)) return false;
+        if (transparent(s) && !labelledControl(el)) return false;
         if (el.disabled === true) return false;
         // Parked off-canvas to the left or above: the ordinary way to hide
         // something without hiding it. Below the fold is NOT excluded, because
@@ -265,34 +342,30 @@ SNAPSHOT_JS = """() => {
     // and nothing is logged: it just quietly does the wrong thing.
     //
     // `:nth-match(sel, n)` is Playwright's own syntax and it resolves through
-    // this engine, verified rather than assumed. The count comes from the whole
-    // document, not from this list, because an element filtered out here for
-    // being invisible still occupies a position in querySelectorAll.
-    const matches = new Map();
-    function nodesFor(sel) {
-        if (!matches.has(sel)) {
-            let n = [];
-            try { n = Array.from(document.querySelectorAll(sel)); } catch (err) { n = []; }
-            matches.set(sel, n);
-        }
-        return matches.get(sel);
-    }
-    // What Playwright's CSS engine finds for `sel` searched from `host`, in the
-    // order it finds it: the host's light descendants, then its shadow root,
-    // then every open shadow root below either. That is `_queryCSS` with
-    // pierceShadow, transcribed, because the index into this list is what
-    // `>> nth=` counts against, and a different order would aim it at a
-    // different element without failing.
-    function piercedFrom(host, sel) {
-        let out = [];
+    // this engine, verified rather than assumed. The matches are counted over
+    // the whole document, not over this list, because an element filtered out
+    // here for being invisible still occupies a position.
+    //
+    // WHAT `sel` finds searched from `host` (the document, or a shadow host),
+    // piercing open shadow roots as Playwright's CSS engine does. Only the SET:
+    // whether a selector is unique, and whether this element is among its
+    // matches, do not depend on the order of a search. WHICH position it holds,
+    // the `n` of `:nth-match` or the `k` of `>> nth=`, is asked of the engine in
+    // `_resolve_nth`. ⛔ Until 0.70.13 both were this file's own guesses: the
+    // document case counted with document.querySelectorAll, which stops at
+    // every shadow boundary, so `[aria-label='X']` was "unique" while the
+    // engine found a second one inside a component; and the shadow case
+    // transcribed the engine's order by hand.
+    function piercedSet(host, sel) {
+        const found = new Set();
         function query(root) {
-            out = out.concat(Array.from(root.querySelectorAll(sel)));
+            for (const e of root.querySelectorAll(sel)) found.add(e);
             if (root.shadowRoot) query(root.shadowRoot);
             for (const e of root.querySelectorAll('*')) if (e.shadowRoot) query(e.shadowRoot);
         }
-        try { query(host); } catch (err) { out = []; }
-        return out;
-    }
+        try { query(host); } catch (err) { return new Set(); }
+        return found;
+    }""" + _PATH_JS + """
     function cssq(s) { return (window.CSS && CSS.escape) ? CSS.escape(s) : s.replace(/[^\\w-]/g, '\\\\$&'); }
     // Single quotes inside the selector, because this string is about to be
     // serialized as JSON and every double quote in it would come back as two
@@ -337,18 +410,17 @@ SNAPSHOT_JS = """() => {
         if (root && root !== document && root.host) {
             const outer = handle(root.host, undefined);
             if (!outer) return null;
-            const inner = piercedFrom(root.host, base);
-            const k = inner.indexOf(el);
-            if (k < 0) return null;
+            const inner = piercedSet(root.host, base);
+            if (!inner.has(el)) return null;
             const chained = outer.sel + ' >> ' + base;
-            return {sel: inner.length === 1 ? chained : chained + ' >> nth=' + k,
-                    fromHref: fromHref};
+            if (inner.size === 1) return {sel: chained, fromHref: fromHref};
+            // Ambiguous: the position is the engine's to say (`_resolve_nth`).
+            return {sel: chained, fromHref: fromHref, nthPath: pathOf(el), nthKind: 'chain'};
         }
-        const n = nodesFor(base);
-        if (n.length === 1) return {sel: base, fromHref: fromHref};
-        const i = n.indexOf(el);
-        if (i < 0) return null;
-        return {sel: ':nth-match(' + base + ', ' + (i + 1) + ')', fromHref: fromHref};
+        const all = piercedSet(document, base);
+        if (!all.has(el)) return null;
+        if (all.size === 1) return {sel: base, fromHref: fromHref};
+        return {sel: base, fromHref: fromHref, nthPath: pathOf(el), nthKind: 'match'};
     }
 
     // No deduplication. It looked free - the same link in the header and in
@@ -407,6 +479,7 @@ SNAPSHOT_JS = """() => {
         // instead of a conditional one, which is the kind a caller gets wrong.
         const h = handle(el, href);
         if (h) e.selector = h.sel;
+        if (h && h.nthPath) { e._nth_path = h.nthPath; e._nth_kind = h.nthKind; }
         // The href is dropped when the selector already carries it, which is
         // the whole reason this stayed affordable. Measured over 969 elements
         // on real pages: emitting the selector cost +47.2% of the payload, and
@@ -455,7 +528,9 @@ async def snapshot(session, max_chars: int = 0) -> str:
     count - keeps the answer about the page rather than about its longest
     dropdown.
     """
-    d = await session.page().evaluate(SNAPSHOT_JS)
+    page = session.page()
+    d = await page.evaluate(SNAPSHOT_JS)
+    await _resolve_nth(page, d.get("interactive_elements", []))
     if not max_chars:
         return json.dumps(d)
     elements = d.pop("interactive_elements", [])
@@ -914,13 +989,22 @@ UPLOAD_MAX_FILES = 20
 #: per-file limit would be a gigabyte copied and held for one call.
 UPLOAD_MAX_TOTAL_BYTES = 100 * 1024 * 1024
 
-_FILE_INPUT_JS = """el => ({
-  file: el.tagName === "INPUT" && (el.type || "").toLowerCase() === "file",
-  multiple: !!el.multiple,
-  shown: (() => { const r = el.getBoundingClientRect(), s = getComputedStyle(el);
-    return r.width > 1 && r.height > 1 && s.visibility !== "hidden"
-        && s.display !== "none" && +s.opacity > 0.01; })()
-})"""
+#: A hand aims at a box, so an input of 1px or less sends it to the label
+#: (`_opener`); what the style hides is clean.STYLE_HIDES_JS, as everywhere.
+_HAND_CAN_AIM_JS = clean.STYLE_HIDES_JS + """
+  function handCanAim(el) {
+    const r = el.getBoundingClientRect();
+    return r.width > 1 && r.height > 1 && !styleHides(getComputedStyle(el));
+  }
+"""
+
+_FILE_INPUT_JS = """el => {""" + _HAND_CAN_AIM_JS + """
+  return {
+    file: el.tagName === "INPUT" && (el.type || "").toLowerCase() === "file",
+    multiple: !!el.multiple,
+    shown: handCanAim(el),
+  };
+}"""
 _FILE_NAMES_JS = "el => el.files ? Array.from(el.files, f => f.name) : null"
 
 
@@ -1155,12 +1239,9 @@ def _expire_snapshots() -> None:
 #: see, as `for` (pointing at it by id) or `wrap` (the input inside it), with
 #: the position among the labels that share the same `for`. None when no label
 #: is shown, which leaves the caller to name the button that opens it.
-_OPENER_JS = """el => {
-  const shown = l => { const r = l.getBoundingClientRect(), s = getComputedStyle(l);
-    return r.width > 1 && r.height > 1 && s.visibility !== "hidden"
-        && s.display !== "none" && +s.opacity > 0.01; };
+_OPENER_JS = """el => {""" + _HAND_CAN_AIM_JS + """
   for (const l of (el.labels || [])) {
-    if (!shown(l)) continue;
+    if (!handCanAim(l)) continue;
     if (l.contains(el)) return {how: "wrap"};
     if (l.htmlFor && l.htmlFor === el.id) {
       const root = l.getRootNode();

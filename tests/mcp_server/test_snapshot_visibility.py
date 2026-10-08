@@ -179,7 +179,23 @@ def test_the_opacity_rule_has_one_exception_and_it_is_shared():
     assert clean.LABELLED_CONTROL_JS in actions.SNAPSHOT_JS
     assert clean.LABELLED_CONTROL_JS in clean.VISIBLE_HTML_JS
     for js in (_code(actions.SNAPSHOT_JS), _code(clean.VISIBLE_HTML_JS)):
-        assert "parseFloat(s.opacity) === 0 && !labelledControl(el)" in js
+        assert "transparent(s) && !labelledControl(el)" in js
+
+
+def test_every_script_that_judges_visibility_shares_one_style_rule():
+    """Known-bad: four definitions of "visible", and the snapshot called opacity
+    0.005 visible where the upload called it hidden. Each script joins
+    STYLE_HIDES_JS, and none compares opacity on its own."""
+    import re
+
+    from invisible_playwright_mcp.mcp import clean
+
+    scripts = {"SNAPSHOT_JS": actions.SNAPSHOT_JS, "VISIBLE_HTML_JS": clean.VISIBLE_HTML_JS,
+               "_FILE_INPUT_JS": actions._FILE_INPUT_JS, "_OPENER_JS": actions._OPENER_JS}
+    for name, js in scripts.items():
+        assert clean.STYLE_HIDES_JS in js, "%s has its own idea of visible" % name
+        own = _code(js.replace(clean.STYLE_HIDES_JS, ""))
+        assert not re.search(r"\.opacity\b", own), "%s compares opacity outside the shared rule" % name
 
 
 def test_the_exception_is_only_for_form_fields():

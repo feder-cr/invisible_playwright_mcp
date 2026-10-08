@@ -109,12 +109,31 @@ async def test_tools_that_drive_one_browser_run_one_at_a_time(spans, first, seco
 
 @pytest.mark.parametrize("reader", [
     lambda: server.browser_snapshot(), lambda: server.browser_read_text(),
-    lambda: server.browser_read_html(), lambda: server.browser_evaluate("1"),
+    lambda: server.browser_read_html(),
 ])
 async def test_reads_do_not_wait_behind_input(spans, reader):
     await asyncio.gather(server.browser_type("#t", "x"), reader())
     other = next(r[0] for r in spans if r[0] != "type_text")
     assert _overlap(spans, "type_text", other), "%s waited behind typing" % other
+
+
+async def test_a_script_waits_behind_input_like_an_action(spans):
+    """Known-bad: `browser_evaluate` went through `work.reading`, so a script
+    calling `focus()` ran in the middle of a typing and the rest of the text
+    landed in the field it focused."""
+    await asyncio.gather(server.browser_type("#t", "x"), server.browser_evaluate("1"))
+    assert not _overlap(spans, "type_text", "evaluate"), "a script ran in the middle of a typing"
+
+
+async def test_a_script_is_refused_while_a_long_typing_goes_on(slow_typing):
+    """A script during a background typing is refused with how far it has got,
+    as any action is; a snapshot is still answered."""
+    first = await server.browser_type("#t", "x" * 50)
+    assert "still typing" in first
+    with pytest.raises(RuntimeError, match="still typing"):
+        await server.browser_evaluate("document.activeElement.id")
+    assert await server.browser_snapshot() == "done"
+    slow_typing.set()
 
 
 @pytest.fixture
