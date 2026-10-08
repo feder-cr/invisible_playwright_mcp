@@ -1,9 +1,9 @@
 <div align="center">
 <picture>
-  <source media="(max-width: 600px) and (prefers-color-scheme: dark), (min-width: 768px) and (max-width: 880px) and (prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/feder-cr/invisible_playwright_mcp/main/assets/banner-narrow-dark.png">
-  <source media="(max-width: 600px), (min-width: 768px) and (max-width: 880px)" srcset="https://raw.githubusercontent.com/feder-cr/invisible_playwright_mcp/main/assets/banner-narrow-light.png">
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/feder-cr/invisible_playwright_mcp/main/assets/banner-dark.png">
-  <img src="https://raw.githubusercontent.com/feder-cr/invisible_playwright_mcp/main/assets/banner-light.png" alt="invisible_playwright_mcp" width="729">
+  <source media="(max-width: 1239px) and (prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/feder-cr/invisible_playwright_mcp/main/assets/banner-phone-dark.gif">
+  <source media="(max-width: 1239px)" srcset="https://raw.githubusercontent.com/feder-cr/invisible_playwright_mcp/main/assets/banner-phone-light.gif">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/feder-cr/invisible_playwright_mcp/main/assets/banner-dark.gif">
+  <img alt="invisible_playwright_mcp, a browser agent anti-bots cannot see. An animation: asked in Claude Code for the cheapest fare on five dates, it opens its Firefox, clicks each day, reads every fare and answers; or it runs on its own with a web UI." src="https://raw.githubusercontent.com/feder-cr/invisible_playwright_mcp/main/assets/banner-light.gif" width="100%">
 </picture>
 <h3 align="center">Other AI browser agents get captchas.<br>
 This one is invisible to anti-bots.</h3>

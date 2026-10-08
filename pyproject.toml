@@ -165,6 +165,10 @@ invisible-playwright-mcp = "invisible_playwright_mcp.cli:main"
 [tool.hatch.build.targets.wheel]
 packages = ["src/invisible_playwright_mcp"]
 
+# The README's animation (about 6 MB) is for GitHub, which loads it from main; the sdist does not carry it.
+[tool.hatch.build.targets.sdist]
+exclude = ["assets/banner-*.gif"]
+
 [tool.pytest.ini_options]
 # ⛔ SO A CHECKOUT GATES ITSELF. Without this, pytest imports whatever the
 # interpreter's installation points at, which is not necessarily this tree:
