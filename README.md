@@ -1,12 +1,12 @@
 <div align="center">
-
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/feder-cr/invisible_playwright_mcp/main/assets/masks-dark.png">
-  <img alt="invisible_playwright_mcp" src="https://raw.githubusercontent.com/feder-cr/invisible_playwright_mcp/main/assets/masks-light.png" width="150">
+  <source media="(max-width: 600px) and (prefers-color-scheme: dark), (min-width: 768px) and (max-width: 880px) and (prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/feder-cr/invisible_playwright_mcp/main/assets/banner-narrow-dark.png">
+  <source media="(max-width: 600px), (min-width: 768px) and (max-width: 880px)" srcset="https://raw.githubusercontent.com/feder-cr/invisible_playwright_mcp/main/assets/banner-narrow-light.png">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/feder-cr/invisible_playwright_mcp/main/assets/banner-dark.png">
+  <img src="https://raw.githubusercontent.com/feder-cr/invisible_playwright_mcp/main/assets/banner-light.png" alt="invisible_playwright_mcp" width="729">
 </picture>
-
-**Other AI browser agents get captchas. This one is invisible to anti-bots.**
-
+<h3 align="center">Other AI browser agents get captchas.<br>
+This one is invisible to anti-bots.</h3>
 </div>
 
 ---
