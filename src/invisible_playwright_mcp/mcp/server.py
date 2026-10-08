@@ -656,15 +656,15 @@ async def browser_evaluate(expression: str, browser: Browser = None) -> str:
 
     The refusal catches the obvious spellings, not every possible one. A script
     that slips past it is still the wrong way to do the thing: report it in your
-    answer rather than using it.
-
-    It waits for whatever is driving this browser to finish, and while a long
-    text is still being typed it is refused like any action."""
+    answer rather than using it."""
     # ⛔ AN ARBITRARY SCRIPT IS NOT A READ, SO IT QUEUES LIKE AN ACTION. It went
     # through `work.reading`, which does not wait for the input lock: during a
     # background typing a script calling `focus()` on another field moved the
     # caret, and the rest of the text landed there. The refusal above stops the
-    # obvious writes, not a focus or a scroll.
+    # obvious writes, not a focus or a scroll. While a long typing goes on the
+    # call is refused with a sentence that says so, which is where the model
+    # learns it: not in the description, resent on every turn (the published
+    # tool-surface figures in docs/ count those characters).
     return await work.acting(actions.evaluate, expression, role=browser)
 
 
