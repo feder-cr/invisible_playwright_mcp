@@ -184,8 +184,9 @@ def _seed_whose_first_pause(longer_than=None, shorter_than=None):
     """A seed whose first pause is known, so the store tests assert the
     mechanism instead of depending on a draw. The engine draws it: the first
     field typed into on a page is its act "field", nonce 1; read from the
-    wrapper's internals here only to know what to expect."""
-    from invisible_playwright._behaviour import TypingPersona, plan_hesitation
+    client's internals here (invisible-core since 38.34.0) only to know
+    what to expect."""
+    from invisible_core.juggler._behaviour import TypingPersona, plan_hesitation
 
     for seed in range(1, 5000):
         p = plan_hesitation(TypingPersona.from_seed(seed), "field", 1) / 1000.0
