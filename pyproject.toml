@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "invisible-playwright-mcp"
-version = "0.70.14"
+version = "0.70.15"
 description = "Anti detect browser and web browsing agent: undetected, no captchas, no blocks"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -95,7 +95,13 @@ dependencies = [
     # 1536x864, as Firefox reports it), service workers can be blocked per
     # context inside the engine, an empty request header survives a route,
     # and on Linux the virtual display keeps X access control on.
-    "invisible-playwright>=0.28.0",
+    #
+    # And to 0.29.0, through invisible-core 38.33.0 and firefox-38: the window
+    # a page reads is the one Windows Firefox draws - a maximized window a
+    # resize border off the screen and two borders wider than the work area,
+    # its content where retail's starts at every display scale, and a popup
+    # with its own size, frame and position.
+    "invisible-playwright>=0.29.0",
     # HTML parsing for browser_read_html. Chosen over lxml by measurement: on
     # six real pages both found byte-identical sets of interactive elements,
     # so correctness did not separate them, and selectolax then parsed 3-5x
