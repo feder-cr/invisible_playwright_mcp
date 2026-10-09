@@ -450,8 +450,9 @@ def test_a_hidden_input_is_opened_by_its_label_after_a_persons_pause(url, env):
 
     # The wrapper's own pause before the files: two hesitations of the
     # session's hand, the first upload of the first page (nonce 1). Read from
-    # the wrapper's internals here only to know what to expect.
-    from invisible_playwright._behaviour import TypingPersona, plan_hesitation
+    # the client's internals here (invisible-core since 38.34.0) only to know
+    # what to expect.
+    from invisible_core.juggler._behaviour import TypingPersona, plan_hesitation
     pause = plan_hesitation(TypingPersona.from_seed(seed), "file", 1, times=2) / 1000.0
     assert (change[3] - clicks[0][3]) / 1000 >= pause * 0.9, (
         "the change came %.0f ms after the click, before this session's pause "
