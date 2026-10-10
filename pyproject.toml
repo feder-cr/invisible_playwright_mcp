@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "invisible-playwright-mcp"
-version = "0.70.17"
+version = "0.70.18"
 description = "Anti detect browser and web browsing agent: undetected, no captchas, no blocks"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -110,7 +110,11 @@ dependencies = [
     # And to 0.31.0, through invisible-core 39.34.0 and firefox-39: a pointer
     # event is answered once the page has handled it, so the tool that clicks
     # and the tool that reads the page after it see the same page.
-    "invisible-playwright>=0.31.0",
+    #
+    # And to 0.32.0, through invisible-core 39.35.0: a session ends with its
+    # last process (no profile left in the temporary directory), characters
+    # that need Shift are typed with Shift, and the hand pauses before a click.
+    "invisible-playwright>=0.32.0",
     # HTML parsing for browser_read_html. Chosen over lxml by measurement: on
     # six real pages both found byte-identical sets of interactive elements,
     # so correctness did not separate them, and selectolax then parsed 3-5x
