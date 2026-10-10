@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "invisible-playwright-mcp"
-version = "0.70.16"
+version = "0.70.17"
 description = "Anti detect browser and web browsing agent: undetected, no captchas, no blocks"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -106,7 +106,11 @@ dependencies = [
     # wrapper drives the browser with lives in the core, shared with
     # invisible-selenium and invisible-puppeteer, and the wrapper's private
     # `_behaviour`, `_motion` and `_pacing` modules are gone with it.
-    "invisible-playwright>=0.30.0",
+    #
+    # And to 0.31.0, through invisible-core 39.34.0 and firefox-39: a pointer
+    # event is answered once the page has handled it, so the tool that clicks
+    # and the tool that reads the page after it see the same page.
+    "invisible-playwright>=0.31.0",
     # HTML parsing for browser_read_html. Chosen over lxml by measurement: on
     # six real pages both found byte-identical sets of interactive elements,
     # so correctness did not separate them, and selectolax then parsed 3-5x
