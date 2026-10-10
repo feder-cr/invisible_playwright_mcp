@@ -140,13 +140,19 @@ async def read_text(session, selector: str = "body", max_chars: int = DEFAULT_MA
     back - is answering from a fragment while believing it is the whole thing.
 
     A cap is fine; a cap nobody can see is not.
+
+    ⛔ THE SELECTOR IS RESOLVED BY THE ENGINE, AS EVERY OTHER TOOL RESOLVES IT.
+    It was `document.querySelector`, which knows neither a shadow root nor
+    Playwright's own syntax, so the `:nth-match(...)` handles the snapshot builds
+    for exactly this purpose failed here while the same string clicked: one of
+    ten failed reads in the saved runs of invisible_dots (2026-10-10) was a
+    selector the click tools would have taken. `DIAGNOSE_JS` was moved off
+    `querySelectorAll` for the same reason on 2026-09-30.
     """
-    txt = await session.page().evaluate(
-        "(sel) => { const el = document.querySelector(sel);"
-        " return el ? el.innerText : null; }", selector,
-    )
-    if txt is None:
+    found = session.page().locator(selector)
+    if await found.count() == 0:
         return f"(no element matches {selector!r})"
+    txt = await found.first.evaluate("(el) => el.innerText")
     if len(txt) <= max_chars:
         return txt
     return txt[:max_chars] + (

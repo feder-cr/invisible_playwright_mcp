@@ -53,6 +53,7 @@ from typing import Annotated, Literal, Optional
 from mcp.server.fastmcp import FastMCP, Image
 from mcp.types import ToolAnnotations
 from pydantic import Field
+from pydantic.json_schema import SkipJsonSchema
 
 from . import __version__, actions, plan, store
 from .. import env as environment
@@ -145,20 +146,44 @@ def _close_sessions_at_exit() -> None:
 
 
 
+#: ⛔ THE HOST DECIDES, ONCE, WHETHER THIS PROCESS OPENS ITS OWN BROWSERS. Read
+#: from the environment like `_SESSION_ID` above (`env.HOST_MANAGED`). A host
+#: that opens and closes the browser itself and gives its model only the page
+#: tools - invisible_dots, one process per identity - would otherwise hand its
+#: model instructions about `browser_open`, a tool that model does not have,
+#: and a `browser` argument naming a helper it cannot open. Under such a host
+#: the process serves `main` alone and says only what is true of a page.
+_HOST_MANAGED = environment.read(environment.HOST_MANAGED) == "1"
+
+# How a browser here is opened, and that nothing else opens one. A fact about
+# the tools, so the server says it (test_the_prompt_says_each_thing_once); a
+# host that opens the browser itself is not told it, because its model cannot
+# call browser_open.
+_OPENING = """Two browsers, `main` and `support`. OPEN `main` WITH browser_open
+BEFORE ANYTHING ELSE: no other tool opens a browser, and every tool that finds
+its browser not open answers with a sentence saying so instead of working.
+With no arguments browser_open brings back the person this session already
+was; pass a seed, a proxy or a profile only to be somebody else. If a tool
+says the browser is gone, call browser_open again and carry on."""
+
 # The ladder, stated once. Each tool's own description says what that tool does;
 # nothing said which to REACH FOR FIRST, and a model that cannot find a way down
 # the ladder invents one. Measured 2026-09-02, first run with a real model: it
 # went from "click the select" straight to running `s.value='beta'` as script,
 # skipping the two rungs in between - coordinates, and a screenshot - because
 # nothing had told it they were rungs.
-INSTRUCTIONS = """Two browsers, `main` and `support`. OPEN `main` WITH browser_open
-BEFORE ANYTHING ELSE: no other tool opens a browser, and every tool that finds
-its browser not open answers with a sentence saying so instead of working.
-With no arguments browser_open brings back the person this session already
-was; pass a seed, a proxy or a profile only to be somebody else. If a tool
-says the browser is gone, call browser_open again and carry on.
-
-Drive the page the way a person would. Everything here goes
+#
+# ⛔ AND WHAT FOLLOWS THE LADDER WAS MEASURED ON A HOST'S RUNS: 45 tasks of
+# invisible_dots that drove a page, 773 page calls, 90 of which led nowhere
+# (2026-10-10). 58 of the 90 were addresses from memory: 27 of the 54 pages
+# dropped unread answered 404, against 1 of 40 pages that were read. A Brave
+# search was the one that gave this browser usable results (DuckDuckGo's html
+# version wraps its links in a redirect, Bing gave an empty results area).
+# Four clicks waited their 15 seconds under a consent dialog before the model
+# answered it. And going back or loading a page again has no tool here: a key
+# pressed on the page never reaches the browser's own shortcuts, so a
+# navigation is the way, and one to the page's own address loads it again.
+PAGE_RULES = """Drive the page the way a person would. Everything here goes
 through the real pointer and the real keyboard.
 
 Try things in this order. It matters, because a page can tell the difference.
@@ -195,11 +220,33 @@ answer is worth more than using it.
 You do not need script to read state back, either. The snapshot carries
 `checked` for a checkbox or radio and `value` for a select, alongside the text.
 
+A cookie or consent dialog covers the page until it is answered: a click on
+anything under it waits and fails. When browser_snapshot shows one, click one of
+its buttons first. A date field that is a calendar wants its days clicked, not
+typed.
+
 If you get to the bottom of the ladder and still cannot do the thing, say so in
 your answer. A task reported as impossible is worth more than a task completed
-in a way that gets you blocked.
+in a way that gets you blocked, and a number or a fact you could not read on the
+page is not one to give.
 
-There are two browsers, and every tool takes `browser`.
+Reach a page through a link you have seen or an address you were given, not one
+you remember: sites move their pages, and an address from memory often answers
+404. browser_snapshot lists a page's links with their URLs, and a site's own
+menu and search reach what you cannot guess. From nothing, search: navigate to
+https://search.brave.com/search?q=<your words> and read the results with
+browser_snapshot, whose URLs are real. After a 404, the next address comes from
+a page that loaded or from a search, not from memory.
+
+A browser drives ONE page, and there is no way to open, list, choose or close
+another: browser_navigate opens the page and every other tool acts on it. Going
+somewhere else and coming back is a navigation, not a second window: to go
+back, navigate to the address you came from, and to load a page again, navigate
+to its own address."""
+
+# What the two roles are, and who closes the helper. Said to a model that can
+# open browsers; a host that opens them itself serves `main` alone.
+_TWO_BROWSERS = """There are two browsers, and every tool takes `browser`.
 
 `main` is your own identity: its page, its cookies, its logins, its
 fingerprint. That is where the work happens, and it is where a command goes
@@ -211,18 +258,18 @@ verification, so you open `support`, go to a throwaway-mail site there, take the
 address, type it into the form in `main`, and come back to `support` for the
 link. A second page inside `main` would carry the same cookies and the same
 fingerprint to both sites, and then the account and the mailbox are one person
-to anyone looking.
-
-Each browser drives ONE page, and there is no way to open, list, choose or
-close another: browser_navigate opens the page and every other tool acts on
-it. When you need a second page, that is what `support` is. Going somewhere
-else and coming back is a navigation, not a second window.
+to anyone looking. When you need a second page, that is what `support` is.
 
 Open it with browser_open when the task needs it, and close it with
 browser_close as soon as the task no longer needs it, before you give your
 answer: it costs a real browser, it is not saved, and it goes away when this
 server does. There is no third browser and no way to get one from here -
 `main` and `support` are the whole of what this gives you."""
+
+#: What this server tells a model once per conversation: all three, or under a
+#: host that opens the browser itself, the page rules alone.
+INSTRUCTIONS = (PAGE_RULES if _HOST_MANAGED
+                else "\n\n".join((_OPENING, PAGE_RULES, _TWO_BROWSERS)))
 
 
 mcp = FastMCP("stealth", instructions=INSTRUCTIONS, lifespan=_lifespan)
@@ -304,11 +351,20 @@ def _says(title: str, *, read_only: bool = False, destructive: bool = False,
 #: the server's instructions, sent once per conversation rather than once per
 #: tool. A gate below holds the complete definitions under what they cost
 #: before, so this cannot quietly grow back.
-Browser = Annotated[
-    Optional[Literal["main", "support"]],
-    Field(default=None,
-          description="Defaults to `main`; `support` is the helper beside it."),
-]
+#:
+#: ⛔ UNDER A HOST THAT OPENS THE BROWSER ITSELF THERE IS NO CHOICE TO OFFER:
+#: the process serves `main` alone, so the argument leaves the schema
+#: (`SkipJsonSchema`) and `support` is refused if a caller sends it anyway.
+#: Decided at import, with `_HOST_MANAGED`, because a schema is built once.
+Browser = (
+    Annotated[SkipJsonSchema[Optional[Literal["main"]]], Field(default=None)]
+    if _HOST_MANAGED else
+    Annotated[
+        Optional[Literal["main", "support"]],
+        Field(default=None,
+              description="Defaults to `main`; `support` is the helper beside it."),
+    ]
+)
 
 
 # --- the two browsers -------------------------------------------------------

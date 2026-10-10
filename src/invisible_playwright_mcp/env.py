@@ -38,6 +38,13 @@ MODEL = "INVISIBLE_MCP_MODEL"
 #: Which saved session this process serves. Set by `runner.child_env` for a
 #: server it spawns, and read once at import by `mcp.server`.
 SESSION_ID = "INVISIBLE_MCP_SESSION_ID"
+#: "1" when the process is spawned by a host that opens and closes its browser
+#: itself and offers its model only the page tools (invisible_dots does: one
+#: process per identity, opened with browser_open and closed with
+#: browser_close by the host). Read once at import by `mcp.server`: the process
+#: then serves `main` alone, no tool takes `browser`, and its instructions are
+#: the page rules without the two browsers and how they are opened.
+HOST_MANAGED = "INVISIBLE_MCP_HOST_MANAGED"
 
 #: new name -> the name it replaced on 2026-09-23. A name is in this map for
 #: exactly as long as somebody might still have it set; removing an entry is a

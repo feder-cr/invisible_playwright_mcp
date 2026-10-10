@@ -25,12 +25,31 @@ def test_large_object_returns_valid_truncated_json():
 # and answering from the fragment looks exactly like answering from the page.
 
 
+class _Element:
+    def __init__(self, text):
+        self._text = text
+
+    async def evaluate(self, _js):
+        return self._text
+
+
+class _Found:
+    """What the engine resolved a selector to: nothing when the text is None."""
+
+    def __init__(self, text):
+        self.first = _Element(text)
+        self._n = 0 if text is None else 1
+
+    async def count(self):
+        return self._n
+
+
 class _Page:
     def __init__(self, text):
         self._text = text
 
-    async def evaluate(self, _js, _selector):
-        return self._text
+    def locator(self, _selector):
+        return _Found(self._text)
 
 
 class _Session:
