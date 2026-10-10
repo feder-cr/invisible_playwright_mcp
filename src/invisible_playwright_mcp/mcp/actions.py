@@ -31,18 +31,19 @@ from ..quiet import swallow
 DEFAULT_MAX_CHARS = 6000
 
 
-def json_capped(obj: Any, limit: int = DEFAULT_MAX_CHARS) -> str:
+def json_capped(obj: Any, limit: int | None = DEFAULT_MAX_CHARS) -> str:
     """Serialize obj as JSON, capped at `limit` chars.
 
     Never slices an already-serialized string, which would yield invalid JSON.
     When the payload is too big it returns a small, always-valid envelope.
+    Use None for data already bounded by its producer, preserving its schema.
 
     For anything that is not a list of elements this is the best that can be
     done. `capped_elements` below is what the snapshot uses, and it exists
     because this envelope was throwing away the whole page.
     """
     s = json.dumps(obj)
-    if len(s) <= limit:
+    if limit is None or len(s) <= limit:
         return s
     return json.dumps({"truncated": True, "chars": len(s), "preview": s[:limit]})
 

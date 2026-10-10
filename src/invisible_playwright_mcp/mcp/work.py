@@ -661,6 +661,15 @@ class Work:
 
     # --- look -------------------------------------------------------------------
 
+    async def network(self, role: str, **filters) -> dict:
+        return self.session(role).network.entries(**filters)
+
+    async def network_clear(self, role: str) -> dict:
+        return self.session(role).network.clear()
+
+    async def network_capture(self, role: str, *, request_bodies: bool) -> dict:
+        return await self.session(role).network.capture(request_bodies=request_bodies)
+
     async def listing(self) -> dict:
         """Which browsers are open, where each one is, and which one commands
         that name none go to. Starts nothing.
