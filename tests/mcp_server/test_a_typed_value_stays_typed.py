@@ -140,7 +140,7 @@ PAGE = b"""<!doctype html><html><body>
 <script>
 window.__events = [];
 for (const k of ['focus', 'keydown', 'compositionstart'])
-  document.addEventListener(k, e => __events.push([k, e.target.id, performance.now()]), true);
+  document.addEventListener(k, e => __events.push([k, e.target.id, performance.now(), e.key || '']), true);
 // Keeps digits only, as a phone or a card field does.
 digits.addEventListener('input', () => { digits.value = digits.value.replace(/[^0-9]/g, ''); });
 // A code split across boxes: each box takes one digit and passes the focus on.
@@ -225,12 +225,12 @@ def test_an_ordinary_field_is_typed_into_after_a_pause_a_person_takes(url):
     seed, pause = _seed_whose_first_pause(longer_than=0.3)
     said, got = _type(url, "#normal", "plain words", seed=seed)
     assert said == "typed into #normal" and got["value"] == "plain words"
-    focus = next(t for k, i, t in got["events"] if k == "focus" and i == "normal")
-    first = next(t for k, i, t in got["events"] if k == "keydown")
+    focus = next(t for k, i, t, _ in got["events"] if k == "focus" and i == "normal")
+    first = next(t for k, i, t, _ in got["events"] if k == "keydown")
     assert (first - focus) / 1000 >= pause * 0.9, (
         "the first key came %.0f ms after the focus, before this session's "
         "pause of %.0f ms" % (first - focus, pause * 1000))
-    assert not any(k == "compositionstart" for k, _, _ in got["events"])
+    assert not any(k == "compositionstart" for k, _, _, _ in got["events"])
 
 
 @pytest.mark.e2e
@@ -279,7 +279,9 @@ def test_a_store_that_answers_after_the_pause_is_said_and_not_retyped(url):
     seed, pause = _seed_whose_first_pause(shorter_than=0.8)
     text = "someone@example.com"
     said, got = _type(url, "#store", text, seed=seed, extra="?answer=%d" % int(pause * 1000 + 1500))
-    keys = sum(1 for k, i, _ in got["events"] if k == "keydown")
+    # Shift is a key of its own, pressed around `@` and capitals as on a real
+    # keyboard (invisible-core 39.35.0): one key per CHARACTER is the rest.
+    keys = sum(1 for k, i, _, key in got["events"] if k == "keydown" and key != "Shift")
     assert keys == len(text), "typed %d keys for %d characters" % (keys, len(text))
     assert got["value"] != text
     assert said.startswith("#store holds only the last") or said.startswith("#store is empty"), said

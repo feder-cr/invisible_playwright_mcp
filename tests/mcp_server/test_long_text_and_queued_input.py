@@ -288,7 +288,11 @@ def test_a_long_text_is_typed_key_by_key_to_the_end_in_the_background(url, monke
                            "typed into #comments)"), news
     assert value == text
     kinds = [k for k, _ in events]
-    assert kinds.count("keydown") == len(text), "not every character was a key"
+    # Shift is a key of its own, pressed around the characters that need it as
+    # on a real keyboard (invisible-core 39.35.0): one key per CHARACTER is the
+    # rest.
+    keys = sum(1 for k, t in events if k == "keydown" and t != "Shift")
+    assert keys == len(text), "not every character was a key"
     assert "compositionstart" not in kinds, "text went in as a composition"
     assert {t for k, t in events if k == "beforeinput"} <= {"insertText", "insertLineBreak"}
 
