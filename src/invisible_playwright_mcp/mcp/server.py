@@ -201,7 +201,7 @@ Try things in this order. It matters, because a page can tell the difference.
 3. Your eyes. browser_take_screenshot, find the thing in the picture, then
    browser_click_at on where it is. For what the snapshot does not list at all.
 
-4. browser_evaluate, to READ what none of the above can see.
+4. browser_evaluate, last, to READ what none of the tools above can.
 
 browser_evaluate refuses the obvious ways to act on the page, and names the tool
 to use instead: assigning to value, checked or selected, or calling click(),
@@ -699,8 +699,10 @@ async def browser_press_key(key: str, browser: Browser = None) -> str:
 async def browser_evaluate(expression: str, browser: Browser = None) -> str:
     """READ from the page with JavaScript and get the result as JSON.
 
-    For what the other tools cannot see: a computed style, a value held in a
-    framework's state, the length of a list.
+    Last, for what other tools cannot see: a computed style, a value held
+    in a framework's state, the length of a list. Text, a heading or a price is
+    browser_read_text's, markup browser_read_html's, a control
+    browser_snapshot's: a script runs in the page, and they do not.
 
     Acting on the page is refused, and the refusal names the tool to use.
     Assigning to `value`, `checked` or `selected`, or calling `click()`,
