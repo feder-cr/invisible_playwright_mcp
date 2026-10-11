@@ -21,8 +21,8 @@ Four steps, repeated:
    third page.
 2. **Ask for one action.** Constrained to a small vocabulary: navigate, click,
    type, select, press, read, screenshot, done. For calibration, our own
-   production server settled on **17 tools totalling 8,918 characters of
-   description, 3,464 tokens with their argument schemas** (measured
+   production server settled on **17 tools totalling 9,081 characters of
+   description, 3,506 tokens with their argument schemas** (measured
    2026-09-13) covering browsers, reading, the
    pointer, the keyboard, a live view and a JavaScript reader. If your vocabulary is much
    larger than that, the model is choosing between overlapping verbs.

@@ -59,8 +59,8 @@ registered. Copilot has a ceiling on how many tools it will offer at once, and
 crossing it means some of them stop being available without a message that says
 so.
 
-The size of one browser server, measured on ours on 2026-10-02: **17 tools,
-8,918 characters of description, 3,464 tokens per turn** once each tool's
+The size of one browser server, measured on ours on 2026-10-11: **17 tools,
+9,081 characters of description, 3,506 tokens per turn** once each tool's
 argument schema is counted with it. Register two browser servers
 in an editor that already has a file server and a search server and you are
 spending a meaningful slice of the context window on tool descriptions before

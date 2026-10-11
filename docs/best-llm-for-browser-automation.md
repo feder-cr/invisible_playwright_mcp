@@ -74,7 +74,7 @@ is the practice, and it is cheaper than upgrading.
 
 **The server's tool surface changes the answer.** A server exposing a hundred
 tools makes every model worse at choosing, and makes small models much worse.
-Ours is **17 tools and 3,464 tokens of tool definition on every turn** (8,918 characters of description, counted with a tokenizer over the server's own registry, 2026-10-02); that overhead lands on every model you test,
+Ours is **17 tools and 3,506 tokens of tool definition on every turn** (9,081 characters of description, counted with a tokenizer over the server's own registry, 2026-10-11); that overhead lands on every model you test,
 so hold it constant when you compare them.
 [How the tools are shaped](mcp-tool-design.md) argues why fewer is better here.
 

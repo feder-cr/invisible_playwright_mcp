@@ -44,7 +44,7 @@ of whether a server is worth it.
 ## What each addition costs
 
 Tool descriptions travel in the model's context on every turn, not once.
-Measured on our own server's registry on 2026-10-02, with a tokenizer rather than a characters-per-token rule of thumb: **17 tools, 3,464 tokens resent every turn** (8,918 characters of description, plus the argument schemas that travel with them). Two servers of that
+Measured on our own server's registry on 2026-10-11, with a tokenizer rather than a characters-per-token rule of thumb: **17 tools, 3,506 tokens resent every turn** (9,081 characters of description, plus the argument schemas that travel with them). Two servers of that
 size on a long coding session is a meaningful slice of the window spent before
 your question arrives, and it is worse than the tokens: overlapping verbs make
 the model choose wrongly.
@@ -93,7 +93,7 @@ and [running invisible_playwright_mcp's browser from Claude Code](how-to-use-a-p
 ## Sources
 
 - [The Model Context Protocol documentation](https://modelcontextprotocol.io/docs/learn/server-concepts), retrieved 2026-09-11, for `tools/list` and the shape of a tool declaration.
-- This project's own MCP server registry, enumerated on 2026-10-02, for the 17 tools and the 3,464 tokens measured above.
+- This project's own MCP server registry, enumerated on 2026-10-11, for the 17 tools and the 3,506 tokens measured above.
 
 ---
 
