@@ -39,7 +39,7 @@ from typing import Awaitable, Callable, Optional
 
 from invisible_playwright.async_api import TargetClosedError
 
-from . import DEFAULT_BROWSER_ID, GONE, NOT_OPEN, SUPPORT_BROWSER_ID, identity, plan, process, store
+from . import DEFAULT_BROWSER_ID, GONE, NOT_OPEN, OPENED, SUPPORT_BROWSER_ID, identity, plan, process, store
 from ..quiet import swallow
 from .actions import NAVIGATION_TIMEOUT_MS
 from .session import StealthSession
@@ -404,7 +404,7 @@ class Work:
             self._acted = role
             if role == DEFAULT_BROWSER_ID:
                 self.remember()
-        return "the %s browser is open. %s" % (role, plan.describe(
+        return "%s %s" % (OPENED % role, plan.describe(
             settings, seed_from=seed_from, exit_note=exit_note, warnings=warnings))
 
     def _refuse_a_held_profile(self, role: str, directory) -> None:

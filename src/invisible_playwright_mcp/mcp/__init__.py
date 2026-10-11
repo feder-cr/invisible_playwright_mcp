@@ -36,7 +36,11 @@ SUPPORT_BROWSER_ID = "support"
 #: with `browser_open` and with nothing else, and when it is gone the model is
 #: told so and told what to do. That is the whole lifecycle.
 NOT_OPEN = "the %s browser is not open. Call browser_open to open it."
+#: The first sentence of `browser_open`'s answer when the browser opened: a host
+#: that drives the server reads it to know the open succeeded, and the rest of
+#: the answer (the identity and how it is set up) is for the model.
+OPENED = "the %s browser is open."
 GONE = ("the %s browser is gone: it closed or crashed. Call browser_open to "
         "open it again; it comes back as the same person.")
 
-__all__ = ["__version__", "DEFAULT_BROWSER_ID", "SUPPORT_BROWSER_ID", "NOT_OPEN", "GONE"]
+__all__ = ["__version__", "DEFAULT_BROWSER_ID", "SUPPORT_BROWSER_ID", "NOT_OPEN", "OPENED", "GONE"]
