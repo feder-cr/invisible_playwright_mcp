@@ -44,10 +44,10 @@ free to declare: its name, its description and the JSON schema for its
 arguments are sent to the model on every turn**, for the life of every session.
 Not once at registration. Every turn.
 
-Enumerated from this project's own browser server on 2026-09-13 and counted
+Enumerated from this project's own browser server on 2026-10-12 and counted
 with a tokenizer rather than a characters-per-token rule of thumb: **17 tools,
-9,081 characters of description, 3,506 tokens on every single turn.** A
-forty-turn session spends around 128,000 tokens restating what the tools are,
+9,207 characters of description, 3,497 tokens on every single turn.** A
+forty-turn session spends around 140,000 tokens restating what the tools are,
 before a page has been read.
 
 Call the same API from your own code and that number is zero. Call it through
@@ -102,7 +102,7 @@ find something and then do something about it, which is the common real case.
 ## The one-line versions
 
 - MCP vs an API: not competitors. MCP is usually a model-facing layer over an
-  API, and it bills you per turn for the discovery it adds - 3,506 tokens on
+  API, and it bills you per turn for the discovery it adds - 3,497 tokens on
   ours, every turn, forever.
 - MCP vs RAG: not competitors. RAG retrieves at scale; MCP acts, and attaches
   known context.

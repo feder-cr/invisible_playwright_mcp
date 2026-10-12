@@ -12,10 +12,10 @@ how to scrape a site and bad at doing the scraping.** Every step is a round trip
 through a model. That is a few seconds and a few thousand tokens per page. A
 plain script does the same page in a fraction of a second for nothing.
 
-The floor under that estimate is measurable and it is ours: our server's 16
-tool definitions are **3,506 tokens resent on every turn** (9,081 characters
+The floor under that estimate is measurable and it is ours: our server's 17
+tool definitions are **3,497 tokens resent on every turn** (9,207 characters
 of description plus each tool's argument schema, counted with a tokenizer on
-2026-09-13). Page content and the model's own reasoning stack on top of that
+2026-10-12). Page content and the model's own reasoning stack on top of that
 floor. Multiply by
 turns, then by pages, and phase 2 below stops being a style preference.
 

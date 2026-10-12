@@ -23,9 +23,9 @@ MCP server and are only choosing which one, the page you want is
 
 ## The price, measured
 
-Enumerated from our own browser server's tool registry on 2026-09-15 and counted
-with a tokenizer: **17 tools, 3,506 tokens** from 9,081 characters of
-description, sent again on every single turn of every session. A forty-turn session spends around 128,000 tokens restating what
+Enumerated from our own browser server's tool registry on 2026-10-12 and counted
+with a tokenizer: **17 tools, 3,497 tokens** from 9,207 characters of
+description, sent again on every single turn of every session. A forty-turn session spends around 140,000 tokens restating what
 the tools are, before a page has been read.
 
 That is not a criticism of MCP; it is the mechanism working. Discoverability
@@ -73,7 +73,7 @@ One question, and it is not about your tooling:
 If yes, everything above beats MCP, and the plain API beats all of them. If no,
 because the page is different every time, because the answer determines the next
 call, because a hundred sources have a hundred shapes, then a model choosing
-among declared tools is worth 3,506 tokens a turn and there is no cheaper way to
+among declared tools is worth 3,497 tokens a turn and there is no cheaper way to
 get it.
 
 The second question is narrower and decides between MCP and native function
@@ -116,7 +116,7 @@ definitions directly.
 not to bet on that. It is that a standard being good does not make it the right
 shape for one particular job.
 
-**What does MCP cost?** Measured on ours: 3,506 tokens on every turn for 17
+**What does MCP cost?** Measured on ours: 3,497 tokens on every turn for 17
 tools. Yours scales with description length and argument schemas, not just tool
 count.
 
@@ -126,7 +126,7 @@ count.
 
 ## Sources
 
-- This project's own MCP server, enumerated through its tool registry on 2026-10-11: 17 tools, 3,506 tokens for the complete definitions, counted with `tiktoken` rather than estimated.
+- This project's own MCP server, enumerated through its tool registry on 2026-10-12: 17 tools, 3,497 tokens for the complete definitions, counted with `tiktoken` rather than estimated.
 - [The MCP transports overview](https://modelcontextprotocol.io/docs/concepts/transports), retrieved 2026-09-13, for what the protocol does and does not define.
 
 ---
