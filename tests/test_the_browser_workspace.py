@@ -199,6 +199,22 @@ async def test_an_unreadable_answer_says_so_instead_of_drawing_an_empty_room():
         "the 503 does not carry what the tool actually said")
 
 
+async def test_the_503_carries_the_whole_sentence():
+    """Until 0.72.1 every 503 of these routes stopped at 200 characters, so a
+    long reason lost its end, which is often the part that names the cause.
+    Known-bad: cut the error text again."""
+    link, sessions, client = _app()
+    await (await sessions.get("lavoro")).send("start something")
+
+    said = "the main browser is open, " + "and the reason goes on " * 20 + "THE END"
+    link.answers["browser_list"] = said
+    got = client.get("/live/browsers?s=lavoro")
+
+    assert got.status_code == 503
+    assert got.json()["error"] == said, (
+        "the 503 cut the tool's sentence: %r" % got.json()["error"][-60:])
+
+
 # --- which browser a pane is watching ---------------------------------------
 
 async def test_a_pane_asks_for_its_own_browser_and_not_for_the_focused_one():

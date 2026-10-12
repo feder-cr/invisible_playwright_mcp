@@ -766,9 +766,17 @@ async def _field_state(page, selector: str) -> dict:
 
 
 def _shown(value: str, secret: bool) -> str:
+    """What the field holds, as the answer quotes it: whole.
+
+    ⛔ IT STOPPED AT 120 CHARACTERS UNTIL 0.72.1, with "..." in place of the
+    rest. These sentences exist to say how the field differs from what was
+    typed, and a page that reformats a long value - or keeps only part of it -
+    makes that difference anywhere in it: past the 120th character the model
+    read "..." where the change was. No constraint asked for the cap (D87: a
+    cap only where one does)."""
     if secret:
         return "%d characters, not shown because the field holds a secret" % len(value)
-    return repr(value if len(value) <= 120 else value[:117] + "...")
+    return repr(value)
 
 
 def what_the_field_kept(selector: str, text: str, before: dict, after: dict) -> str:

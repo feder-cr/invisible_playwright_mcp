@@ -48,6 +48,15 @@ def test_a_field_the_page_reformatted_says_how_it_shows_it():
     assert _kept("12ab34", "1234") == "typed into #f; the page shows it as '1234'"
 
 
+def test_a_long_value_the_page_reformatted_is_quoted_whole():
+    """Until 0.72.1 the quote stopped at 120 characters with "...", so a page
+    that reformatted a long value past that point answered with the part that
+    had not changed. Known-bad: cap the quote again."""
+    typed = "a" * 150 + "1234"
+    shown = "a" * 150 + "12-34"
+    assert _kept(typed, shown) == "typed into #f; the page shows it as %r" % shown
+
+
 def test_a_maxlength_is_said_as_a_cut_not_as_a_success():
     said = _kept("abcdef", "abcd")
     assert said.startswith("#f kept only the first 4 of 6 characters"), said

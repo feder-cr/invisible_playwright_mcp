@@ -292,13 +292,15 @@ class ChatService:
                 # wrong, and it said nothing about what to do next or about the
                 # instruction they had just lost sight of. The detail stays -
                 # it is the only clue when the cause is real - behind a sentence
-                # that says what happened and what is still true.
+                # that says what happened and what is still true. And whole:
+                # until 0.72.1 it stopped at 200 characters, which cut a
+                # provider's error before the field that named the cause.
                 detail = " ".join(str(exc).split())
                 await self.emit("err", "The turn ended early. What you asked is "
                                 "still in the transcript, so you can send it "
                                 "again once this is dealt with. (%s%s)"
                                 % (type(exc).__name__,
-                                   ": " + detail[:200] if detail else ""))
+                                   ": " + detail if detail else ""))
             finally:
                 await self.emit("busy", "0")
                 # After the turn and not during it: a transcript written

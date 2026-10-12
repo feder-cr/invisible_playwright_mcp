@@ -299,6 +299,17 @@ async def events(request: Request) -> StreamingResponse:
 
 # --- the live browsers ----------------------------------------------------------
 
+def unavailable(said: str) -> JSONResponse:
+    """The 503 of a pane's route: the reason, whole.
+
+    ⛔ ONE PLACE, AND NO CAP. Four routes wrote this answer each for
+    itself, each cutting the reason at 200 characters, and a reason that long
+    usually names its cause at the end. Nothing asked for the cut (D87: a cap
+    only where a real constraint does), so it is gone, and with one writer it
+    cannot come back in three places out of four."""
+    return JSONResponse({"error": said}, status_code=503)
+
+
 async def frame(request: Request) -> Response:
     """The window the active tab lives in, as `browser_watch` captures it.
 
@@ -336,7 +347,7 @@ async def frame(request: Request) -> Response:
         result = await seen.link.call("browser_watch",
                                       {"browser": watching} if watching else {})
     except Exception as exc:
-        return JSONResponse({"error": str(exc)[:200]}, status_code=503)
+        return unavailable(str(exc))
     got = image_of(result)
     if got is None:
         # A tool that raised reaches a client as an error RESULT with the
@@ -351,7 +362,7 @@ async def frame(request: Request) -> Response:
         text, failed = answer_of(result)
         reason = text if failed else ""
         if reason and NOT_OPEN % (watching or DEFAULT_BROWSER_ID) not in reason:
-            return JSONResponse({"error": reason[:200]}, status_code=503)
+            return unavailable(reason)
         # And one refusal is not a failure at all: a browser that is not
         # open is nothing to look at, which is the idle pane. Compared
         # against the sentence itself rather than guessed at from its shape -
@@ -380,7 +391,7 @@ async def browsers(request: Request) -> JSONResponse:
     try:
         said = await seen.link.call_text("browser_list")
     except Exception as exc:
-        return JSONResponse({"error": str(exc)[:200]}, status_code=503)
+        return unavailable(str(exc))
     try:
         got = json.loads(said)
     except ValueError:
@@ -390,8 +401,7 @@ async def browsers(request: Request) -> JSONResponse:
         # other than its own JSON, which is either an error result carrying its
         # reason as text or a server that is not this one. Both are worth a
         # sentence; neither is an empty workspace.
-        return JSONResponse({"error": said[:200] or "the workspace could not be read"},
-                            status_code=503)
+        return unavailable(said or "the workspace could not be read")
     # ⛔ AND THE BUILD RIDES ALONG, on the one question every page asks every
     # three seconds. A page left open across an upgrade goes on running the
     # script it was served, against a server that has moved: nothing says so
