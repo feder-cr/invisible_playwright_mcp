@@ -1,17 +1,9 @@
-"""A number the model is told is the number the code uses.
+"""A number the model is told is the number the code uses, and a measurement
+lives beside the code it justifies, not in a tool description.
 
-⛔ THE CAP WAS WRITTEN THREE TIMES: `DEFAULT_MAX_CHARS` in `actions.py`, the
-default in `browser_read_text`'s signature, and the digit in its description.
-The signature was a copy nothing read back, so it could drift from the constant
-in silence and the tool would honour a number its own module did not declare.
-It reads the constant now.
-
-The DIGIT in the prose stays, and a draft that deleted it was wrong: the schema
-does publish the default, but `test_the_two_readers_do_not_pretend_to_share_a
-_cap` holds that this description declares its cap while `browser_read_html`
-declares it has none, because a reader shown one and not the other assumes
-symmetry and the two differ by 34x on a large page. A number with a reason to
-be written twice gets a gate rather than a deletion.
+(This file also tied the 6000-character cap of `browser_read_text` to its
+description and schema until 0.71; the cap is gone since 0.72.0, and
+`test_answers_come_back_whole.py` holds that it stays gone.)
 """
 from __future__ import annotations
 
@@ -23,32 +15,6 @@ from invisible_playwright_mcp.mcp import actions, server
 
 def tools() -> dict:
     return {t.name: t for t in asyncio.run(server.mcp.list_tools())}
-
-
-def test_the_cap_in_the_prose_is_the_cap_the_tool_uses():
-    """Known-bad: change `DEFAULT_MAX_CHARS` and leave the sentence alone, or
-    type a different digit into the sentence."""
-    text = tools()["browser_read_text"].description or ""
-    said = re.findall(r"\b(\d{3,6})\b", text)
-    assert said, "the description stopped naming a cap at all: %r" % text
-    assert str(actions.DEFAULT_MAX_CHARS) in said, (
-        "the description tells the model %s while the tool cuts at %d"
-        % (" and ".join(said), actions.DEFAULT_MAX_CHARS))
-
-
-def test_the_schema_publishes_the_same_cap():
-    """The third reader. A client that renders the argument shows this number,
-    and it must be the constant rather than a literal somebody retyped in the
-    signature.
-
-    Known-bad: put `max_chars: int = 6000` back in the signature and move the
-    constant - the schema then disagrees with the module that owns it.
-    """
-    schema = tools()["browser_read_text"].inputSchema
-    field = (schema.get("properties") or {}).get("max_chars") or {}
-    assert field.get("default") == actions.DEFAULT_MAX_CHARS, (
-        "the schema publishes %r as the default while the module declares %d"
-        % (field.get("default"), actions.DEFAULT_MAX_CHARS))
 
 
 def test_a_measurement_is_not_repeated_in_a_tool_description():

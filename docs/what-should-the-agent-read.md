@@ -31,8 +31,7 @@ paragraphs, 37,538 bytes of served HTML:
 
 | how the page comes back | bytes | note |
 |---|---|---|
-| `browser_read_text`, default | 6,101 | **truncated, and it says so** |
-| `browser_read_text`, `max_chars: 50000` | 35,490 | the whole text |
+| `browser_read_text` | 35,490 | the whole text |
 | `browser_read_html` | 37,531 | **not truncated** |
 | `browser_snapshot` | 78 | no interactive elements on this page |
 | `browser_take_screenshot` | 123,940 | one viewport |
@@ -40,11 +39,10 @@ paragraphs, 37,538 bytes of served HTML:
 Three things change, and each one contradicts something you would have assumed
 from the first table.
 
-**Text truncates by default and tells you.** The tail of the default read is,
-verbatim: `6000 of 35490 characters. Raise max_chars, or narrow the selector to
-the part you need.` That is the best possible behaviour, because the alternative
-is a silently short answer, and it means **a read that looks complete on a small
-page is a tenth of a long one** unless you raise the limit or scope the selector.
+**Text comes back whole, so on a long page it is long.** Until 0.71 the default
+read stopped at 6,000 characters (6,101 bytes here) with a last line asking for a
+larger `max_chars`; since 0.72.0 there is no ceiling and no such parameter, and
+the read above is all 35,490. Scope the selector when you only need a region.
 
 **HTML does not truncate, so on a long page it is the expensive one.** It was 1.3
 times the text on the small page and it is the largest text payload here, bigger
@@ -143,10 +141,10 @@ displayed. On a small page it is 1.3x the text; on a long one it was the largest
 of the four text payloads, so it is a cheap escalation only while the page is
 short.
 
-**Why did my read come back truncated?** The text read has a default ceiling, and
-on the long page here it returned 6,000 of 35,490 characters with a line saying
-exactly that. Raise `max_chars` or scope the read with a selector. The important
-part is that a short answer on a long page is not the page being short.
+**Does a read come back truncated?** Not since 0.72.0. Until 0.71 the text read
+had a 6,000-character ceiling and, on the long page here, returned 6,000 of
+35,490 characters with a line saying so. Now the whole text comes back, and a
+selector is how to ask for less.
 
 **See also:**
 [how many MCP tools is too many](how-many-mcp-tools-is-too-many.md), which counts

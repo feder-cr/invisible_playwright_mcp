@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "invisible-playwright-mcp"
-version = "0.71.2"
+version = "0.72.0"
 description = "Anti detect browser and web browsing agent: undetected, no captchas, no blocks"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -114,7 +114,14 @@ dependencies = [
     # And to 0.32.0, through invisible-core 39.35.0: a session ends with its
     # last process (no profile left in the temporary directory), characters
     # that need Shift are typed with Shift, and the hand pauses before a click.
-    "invisible-playwright>=0.32.0",
+    #
+    # And to 0.35.0, through invisible-core 41.36.0: a read made right after
+    # browser_navigate on a page that replaces itself answers with the page
+    # instead of "Failed to find execution context", and a navigation the
+    # previous page's own redirect beats answers at once, naming where the
+    # browser went, instead of after the 45 s timeout. read_text's
+    # one-command read (`all_inner_texts`) is what the tests here measured.
+    "invisible-playwright>=0.35.0",
     # HTML parsing for browser_read_html. Chosen over lxml by measurement: on
     # six real pages both found byte-identical sets of interactive elements,
     # so correctness did not separate them, and selectolax then parsed 3-5x

@@ -19,11 +19,10 @@ Most listings state their own size: "1,240 results", "page 3 of 17", "showing 20
 of 400". Compare your row count against it.
 
 A short count is truncation or an early stop, and it is the single most common
-failure of a collection run. A read that came back clipped is one cause, and it
-announces itself when it happens: measured on a long page, the default text read
-returned 6,000 of 35,490 characters and said so in its own last line, per
-[text, HTML, snapshot or screenshot](what-should-the-agent-read.md). A silent
-short count usually means the walk stopped early instead.
+failure of a collection run. Reads through this server are not clipped since
+0.72.0 (until 0.71 a long text read returned 6,000 of 35,490 characters and said
+so, per [text, HTML, snapshot or screenshot](what-should-the-agent-read.md)), so
+a short count usually means the walk stopped early.
 
 ## 2. Check the last row, not a random one
 
@@ -123,7 +122,7 @@ because a row count is only meaningful once duplicates are resolved.
 
 ## Sources
 
-- The truncation behaviour used in check 1, a default text read returning 6,000 of 35,490 characters with a line saying so, is measured and sourced on [text, HTML, snapshot or screenshot](what-should-the-agent-read.md).
+- The read behaviour used in check 1, a text read that up to 0.71 returned 6,000 of 35,490 characters with a line saying so and since 0.72.0 returns it whole, is measured and sourced on [text, HTML, snapshot or screenshot](what-should-the-agent-read.md).
 - The five checks are practice rather than a study, and the page presents them as such.
 
 ---

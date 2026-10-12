@@ -94,9 +94,9 @@ A page with hundreds of controls, a data grid with an input per cell, a settings
 screen with two hundred toggles: at a hundred bytes each that is tens of
 kilobytes of snapshot every time you look.
 
-`browser_snapshot` takes a `max_chars`, so it can be capped. Capping a list of
-controls is cruder than capping prose, though, because you do not know which ones
-were dropped.
+`browser_snapshot` returns every control: there is no cap. Until 0.71 a
+`max_chars` dropped elements from the end of the list, which is cruder than
+cutting prose, because nothing said which of the dropped ones mattered.
 
 Usually better: act in phases. Read the page once to decide which region you
 care about, then work within it, re-reading only when the layout has changed.
@@ -121,9 +121,8 @@ do. Prose contributes nothing.
 shadow root, or genuinely not interactive. Each of the first two has its own page
 here.
 
-**Can I make it smaller?** `max_chars` caps it, at the price of not knowing what
-was dropped. Scoping the work to a region of the page is usually the better
-answer.
+**Can I make it smaller?** Scope the work to a region of the page. The snapshot
+itself is not capped, since 0.72.0, so nothing in it is silently missing.
 
 **See also:**
 [text, HTML, snapshot or screenshot](what-should-the-agent-read.md), the companion

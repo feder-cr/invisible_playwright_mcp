@@ -107,12 +107,12 @@ Extractions rarely fail loudly. These are the quiet versions to expect:
 
 - **Truncation on long lists.** An over-full page arrives clipped, and the model
   extracts what it received, confidently: output that looks complete and is
-  short. Measured through the MCP server on a long page, a default text read
-  returned 6,000 of 35,490 characters and said so in its own last line, which is
-  the good version of this failure;
+  short. Measured through the MCP server on a long page, a text read up to 0.71
+  returned 6,000 of 35,490 characters and said so in its own last line; since
+  0.72.0 the reads are not capped and the whole text comes back;
   [text, HTML, snapshot or screenshot](what-should-the-agent-read.md) has that
-  measurement and the `max_chars` escape. Defense: keep reads narrow ("read the
-  product list, not the page"), and check counts, below.
+  measurement. Defense: keep reads narrow ("read the product list, not the
+  page"), and check counts, below.
 - **Images whose captions come from six different places.** When the rows are
   pictures rather than text, the caption is rarely in the alt attribute and the
   `src` is rarely the full-size file:

@@ -46,6 +46,7 @@ from __future__ import annotations
 
 import asyncio
 import atexit
+import json
 import os
 from contextlib import asynccontextmanager
 from typing import Annotated, Literal, Optional
@@ -443,7 +444,7 @@ async def browser_list() -> str:
     # which is two sources for one fact. Models read JSON from these tools
     # without trouble; `note` carries the sentence that used to be the whole
     # answer, because "there is nothing here yet" is worth saying in words.
-    return actions.json_capped(await work.listing())
+    return json.dumps(await work.listing())
 
 
 # --- who is browsing ---------------------------------------------------------
@@ -503,36 +504,21 @@ async def browser_navigate(url: str, wait_until: str = "domcontentloaded",
 
 @mcp.tool(annotations=_says("Read the page text", read_only=True))
 async def browser_read_text(selector: str = "body",
-                            max_chars: int = actions.DEFAULT_MAX_CHARS,
                             browser: Browser = None) -> str:
-    """The visible text of an element, with the markup gone.
+    """The visible text of an element, with the markup gone, whole.
 
     The cheapest way to read a page. Narrow the selector when you know where the
     answer is; use browser_read_html instead when the structure matters, or
-    browser_snapshot when you need something to click.
-
-    Long text is cut at max_chars (6000 by default) and the cut is marked in
-    what comes back, so text that ends without that marker is the whole thing."""
-    # ⛔ THE CAP WAS WRITTEN THREE TIMES: the constant in `actions.py`, this
-    # signature, and the prose above. The signature was the copy worth removing
-    # - nothing read it back, so it could drift from the constant in silence
-    # and the tool would honour a number its own module did not declare.
-    #
-    # ⛔ THE PROSE COPY STAYS, AND A DRAFT THAT DELETED IT WAS WRONG. The
-    # reasoning was that the schema already publishes `"default": 6000`, so the
-    # sentence is a second copy - which is true and is not the whole story:
-    # `test_the_two_readers_do_not_pretend_to_share_a_cap` holds that this
-    # description declares its cap while `browser_read_html` declares it has
-    # none, because a reader shown one and not the other assumes symmetry, and
-    # the two differ by 34x on a large page. A number that has a reason to be
-    # written twice gets a GATE, not a deletion: `test_the_cap_in_the_prose_is
-    # _the_cap_the_tool_uses` ties this digit to the constant, so the copy
-    # cannot drift even though it stays.
-    return await work.reading(actions.read_text, selector, max_chars, role=browser)
+    browser_snapshot when you need something to click."""
+    # ⛔ NO `max_chars` SINCE 0.72.0. The text was cut at 6000 characters with a
+    # marker asking the model to raise the number: a second call to get what the
+    # first should have given, and a cut answer read as the page whenever the
+    # marker was missed. Answers come back whole (`actions.py`, top).
+    return await work.reading(actions.read_text, selector, role=browser)
 
 
 @mcp.tool(annotations=_says("Snapshot the page", read_only=True))
-async def browser_snapshot(max_chars: int = 0, browser: Browser = None) -> str:
+async def browser_snapshot(browser: Browser = None) -> str:
     """Title, url, and the interactive elements that are actually visible.
 
     Each element carries a `selector` when one can reach it: pass that string to
@@ -560,7 +546,7 @@ async def browser_snapshot(max_chars: int = 0, browser: Browser = None) -> str:
     # once and updated once, and the copy that stays wrong is the one a model
     # reads. It also spends the 1024 characters this description is cut at on
     # evidence for a reader who is not there.
-    return await work.reading(actions.snapshot, max_chars, role=browser)
+    return await work.reading(actions.snapshot, role=browser)
 
 
 @mcp.tool(annotations=_says("Read the page HTML", read_only=True))

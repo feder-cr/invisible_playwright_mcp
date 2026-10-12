@@ -34,6 +34,8 @@ WHAT_THE_TOOLS_NEED = {
         ("0.13.2", "browser_navigate reports the HTTP status and the landed url"),
         ("0.22.1", "a click is delivered once, whatever the click does to the page"),
         ("0.25.8", "a file chooser opened for a hidden file input takes the files"),
+        ("0.35.0", "browser_read_text right after browser_navigate reads the page "
+                   "that replaced itself instead of failing on its vanished world"),
     ],
 }
 
