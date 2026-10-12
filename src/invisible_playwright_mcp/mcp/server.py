@@ -494,6 +494,11 @@ async def browser_navigate(url: str, wait_until: str = "domcontentloaded",
     a 404 or a 403 still has a document, and reading it as content is the
     mistake this reply exists to prevent.
 
+    If the page you were on navigates itself at that moment (a redirect on a
+    timer), Firefox can follow it instead, and the answer is an error saying
+    "interrupted by another navigation to" a url. The browser is on that url,
+    and you can navigate again from there.
+
     wait_until is "domcontentloaded" by default, which returns as soon as the
     markup is parsed. Use "load" when the page needs its images and stylesheets,
     or "networkidle" for a single-page app that fetches its content after
