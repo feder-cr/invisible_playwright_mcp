@@ -21,7 +21,6 @@ import re
 import shutil
 import stat
 import tempfile
-from typing import Any
 
 from . import clean, process
 from ..quiet import swallow
