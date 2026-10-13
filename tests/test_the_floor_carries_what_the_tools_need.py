@@ -39,6 +39,9 @@ WHAT_THE_TOOLS_NEED = {
         ("0.35.2", "browser_snapshot and browser_read_html read through "
                    "page.evaluate_read, and browser_evaluate runs the model's "
                    "code once when its page navigates while it waits"),
+        ("0.35.4", "a page that replaces itself keeps its main world, so the "
+                   "snapshot and read_html read it instead of waiting 30 s for a "
+                   "world the engine never announced (B286, firefox-42)"),
     ],
 }
 
