@@ -171,7 +171,10 @@ const VERB = {
   browser_open:['Opening browser','Opened browser'],
   browser_close:['Closing browser','Closed browser'],
   browser_list:['Listing browsers','Listed browsers'],
-  browser_status:['Checking browser','Checked browser']
+  browser_status:['Checking browser','Checked browser'],
+  browser_network:['Reading network','Read network'],
+  browser_network_clear:['Clearing network history','Cleared network history'],
+  browser_network_capture:['Setting network capture','Set network capture']
 };
 const LEAD = /^(I will |I'll |I am |I'm |Let me |Now I will |Now I'll )/i;
 
