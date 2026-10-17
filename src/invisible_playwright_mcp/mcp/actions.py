@@ -224,14 +224,22 @@ SNAPSHOT_JS = """() => {
     // With the count, the two cases separate on sight: one odd element leaves
     // 199 results and `unmeasurable: 1`, while a shadowed prototype leaves zero
     // results and `unmeasurable: 412`.
+    //
+    // Since firefox-49 a page's replacement no longer gets here: this runs in
+    // the caller's world, where a name the standard defines is the browser's
+    // own whatever the page did to it ([B322], B335 of the engine's docs), so
+    // the page's broken method is not the one called. The count stays for the
+    // failures that are still real, a measuring that raises.
     let unmeasurable = 0;
 
     function shown(el) {
         // getBoundingClientRect can fail to give a rectangle on a real page:
         // measured on one, the snapshot died with "can't access property
         // width, r is undefined" and the caller got NOTHING for the whole
-        // document. A page can shadow or replace this method, and some do.
-        // One odd element must not cost the other two hundred.
+        // document. A page can shadow or replace this method, and some do;
+        // in the caller's world (firefox-49) that replacement is not what runs
+        // here, and what can still fail is counted, not fatal. One odd element
+        // must not cost the other two hundred.
         let r = null;
         try { r = el.getBoundingClientRect(); } catch (err) { unmeasurable++; return false; }
         if (!r || typeof r.width !== 'number') { unmeasurable++; return false; }

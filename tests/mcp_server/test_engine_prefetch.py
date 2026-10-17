@@ -176,8 +176,26 @@ async def test_leaving_over_stdio_abandons_the_download(monkeypatch):
     assert calls == ["abandon", "close_all"]
 
 
-def test_the_server_engine_reads_the_binary_the_planner_reads():
-    """One reader of STEALTHFOX_BINARY: the engine the server builds at
-    import names whatever `plan.engine_here` names, so the two cannot
-    disagree on where a binary comes from."""
-    assert server.engine.path == server.plan.engine_here().get("binary_path")
+@pytest.mark.parametrize("env", [{}, {"STEALTHFOX_BINARY": "C:/somewhere/firefox.exe"}])
+def test_the_server_engine_reads_the_binary_the_planner_reads(env):
+    """One reader of STEALTHFOX_BINARY: the engine the server builds names
+    whatever `plan.engine_here` names, so the two cannot disagree on where a
+    binary comes from.
+
+    Asked of ONE environment, given to both. Until 0.72.3 this compared the
+    engine built at import with `engine_here()` read after the autouse
+    fixture had deleted the variable: two environments, equal only when the
+    variable was never set, so the suite went red in the e2e's environment,
+    which sets it (B333). The variable named here is a case, not the
+    machine's, so the check runs whatever the shell carries."""
+    named = env.get("STEALTHFOX_BINARY")
+    assert server.process_engine(env).path == server.plan.engine_here(env).get("binary_path") == named
+
+
+def test_the_server_builds_its_engine_through_that_one_function():
+    """The module global is what `process_engine` built: a second construction
+    of the engine beside it would be a second reader of the variable."""
+    import inspect
+
+    source = inspect.getsource(server)
+    assert source.count("Engine(") == 1 and "engine = process_engine()" in source

@@ -42,6 +42,9 @@ WHAT_THE_TOOLS_NEED = {
         ("0.35.4", "a page that replaces itself keeps its main world, so the "
                    "snapshot and read_html read it instead of waiting 30 s for a "
                    "world the engine never announced (B286, firefox-42)"),
+        ("0.37.0", "the snapshot runs in the caller's world, so a page that "
+                   "replaces getBoundingClientRect no longer hides its elements "
+                   "from it (B322, firefox-49)"),
     ],
 }
 

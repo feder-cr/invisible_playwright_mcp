@@ -107,27 +107,42 @@ def reads():
                     except Exception as exc:  # noqa: BLE001 - the test reads it
                         went = "raised %s: %s" % (type(exc).__name__, exc)
                     took = time.monotonic() - began
+                    # The third honest answer ([B302]): the previous page's own
+                    # replace stopped ours, and the page went where it sent
+                    # itself. That is only an answer if it really got there.
+                    landed = None
+                    if "NS_BINDING_ABORTED" in went:
+                        try:
+                            await session.page().wait_for_url("**/landed", timeout=10_000)
+                            landed = True
+                        except Exception:  # noqa: BLE001 - the test reads it
+                            landed = False
                     try:
                         got = await actions.read_text(session, "#p")
                     except Exception as exc:  # noqa: BLE001 - the test reads it
                         got = "raised %s: %s" % (type(exc).__name__, exc)
-                    out.setdefault(path, []).append((went, took, got))
+                    out.setdefault(path, []).append((went, took, got, landed))
             # Each read first after its own navigation: a read that follows
             # another one meets a page that has had time to settle.
+            # `prev` is the page asked for before: when a navigation is stopped
+            # by the previous page's own replace, the read can meet that page
+            # still in place, which is where the browser honestly is.
+            prev = None
             for kind, read in (("snapshot", lambda: actions.snapshot(session)),
                                ("read_html", lambda: actions.read_html(session, "text"))):
                 for path in ("/head", "/r0", "/r50", "/r300", "/x0", "/x50", "/x300"):
                     for i in range(ROUNDS):
+                        url = "%s%s?%s=%d" % (base, path, kind, i)
                         try:
-                            await actions.navigate(session, "%s%s?%s=%d"
-                                                   % (base, path, kind, i))
-                        except Exception:  # noqa: BLE001 - the read is the point
-                            pass
+                            went = await actions.navigate(session, url)
+                        except Exception as exc:  # noqa: BLE001 - the read is the point
+                            went = "raised %s: %s" % (type(exc).__name__, exc)
                         try:
                             got = await read()
                         except Exception as exc:  # noqa: BLE001 - the test reads it
                             got = "raised %s: %s" % (type(exc).__name__, exc)
-                        out.setdefault((kind, path), []).append(got)
+                        out.setdefault((kind, path), []).append((went, prev, got))
+                        prev = url
             out["miss"] = await actions.read_text(session, "#nothing-here")
         finally:
             await session.close()
@@ -147,7 +162,7 @@ def test_a_read_right_after_navigate_answers_with_the_page(reads, path):
     of the page as it is at that moment: either document's text, or, when the
     read lands in the replacing document before its parser reached the
     paragraph, the honest "no element matches"."""
-    for _went, _took, got in reads[path]:
+    for _went, _took, got, _landed in reads[path]:
         assert (got in ("FIRST-TEXT", "LANDED-TEXT")
                 or got.startswith("(no element matches")), got
 
@@ -159,11 +174,19 @@ def test_a_navigation_answers_at_once_even_when_the_previous_page_wins(reads, pa
     previous page's redirect, seen before ours, is never accepted in its
     place: `browser_navigate` waited the full 45 s for a document that was
     never coming. It answers with where it went, or with the interruption
-    and the page that won, and in seconds."""
-    for went, took, _got in reads[path]:
+    and the page that won, and in seconds.
+
+    And a third answer is honest too, measured on upstream Playwright as well
+    as here ([B302], B331): the page's own replace can stop OUR navigation
+    while it is on its way, and goto raises NS_BINDING_ABORTED with the page
+    then on /landed. Until 0.72.3 this test admitted only the first two, red
+    on the published pair 3 runs in 4. The third counts only with the page
+    really on /landed afterwards."""
+    for went, took, _got, landed in reads[path]:
         assert (went.startswith("navigated to ")
                 or ("is interrupted by another navigation to" in went
-                    and "/landed" in went)), went
+                    and "/landed" in went)
+                or ("NS_BINDING_ABORTED" in went and landed)), (went, landed)
         assert took < 10, (took, went)
 
 
@@ -178,10 +201,16 @@ def test_a_snapshot_right_after_navigate_answers_with_the_page(reads, path):
     """A snapshot is a read: the page moving on under it is read again, and it
     never surfaces "Execution context was destroyed"."""
     import json
-    for got in reads[("snapshot", path)]:
+    for went, prev, got in reads[("snapshot", path)]:
         assert not got.startswith("raised"), got
-        d = json.loads(got)
-        assert path in d["url"] or "/landed" in d["url"], d["url"]
+        url = json.loads(got)["url"]
+        # The previous page is an honest answer only when our navigation was
+        # stopped or overtaken by its own replace ([B302], B331): the read
+        # then meets it still in place, before /landed commits.
+        stopped = ("NS_BINDING_ABORTED" in went
+                   or "is interrupted by another navigation to" in went)
+        assert (path in url or "/landed" in url
+                or (stopped and prev is not None and url == prev)), (url, went, prev)
 
 
 @pytest.mark.e2e
@@ -190,7 +219,7 @@ def test_read_html_right_after_navigate_answers_with_the_page(reads, path):
     """read_html is a read too. Its text is of either document, or empty when
     the read lands in the replacing document before its parser reached the
     paragraph; it is never the navigation error."""
-    for got in reads[("read_html", path)]:
+    for _went, _prev, got in reads[("read_html", path)]:
         assert not got.startswith("raised"), got
         assert ("FIRST-TEXT" in got or "LANDED-TEXT" in got
                 or "TEXT" not in got), got

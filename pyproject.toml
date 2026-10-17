@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "invisible-playwright-mcp"
-version = "0.72.2"
+version = "0.72.3"
 description = "Anti detect browser and web browsing agent: undetected, no captchas, no blocks"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -136,7 +136,15 @@ dependencies = [
     # waited 30 s and failed with "the main world never appeared"; measured in
     # this package's e2e on 0.35.2, the first read after a navigation onto
     # a page that rewrites itself in its head.
-    "invisible-playwright>=0.35.4",
+    #
+    # And to 0.37.0, through invisible-core 49.44.0 and firefox-49: the
+    # snapshot and every read of this package run in the caller's own world,
+    # where a name the standard defines is the browser's own whatever the page
+    # did to it (B322). A page that replaced getBoundingClientRect used to
+    # hide its elements from the snapshot or turn them into a count; on
+    # 0.37.0 they are measured with the real method and listed, and the page
+    # never sees the call (B335 in the engine's docs).
+    "invisible-playwright>=0.37.0",
     # HTML parsing for browser_read_html. Chosen over lxml by measurement: on
     # six real pages both found byte-identical sets of interactive elements,
     # so correctness did not separate them, and selectolax then parsed 3-5x

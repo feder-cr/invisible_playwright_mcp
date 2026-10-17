@@ -49,7 +49,7 @@ import atexit
 import json
 import os
 from contextlib import asynccontextmanager
-from typing import Annotated, Literal, Optional
+from typing import Annotated, Literal, Mapping, Optional
 
 from mcp.server.fastmcp import FastMCP, Image
 from mcp.types import ToolAnnotations
@@ -92,7 +92,17 @@ _SESSION_ID = environment.read(environment.SESSION_ID) or store.DEFAULT_SESSION_
 #: daemon thread, unless `STEALTHFOX_BINARY` names one (`plan.engine_here`,
 #: the one reader of that variable). `work.open` asks it before launching and
 #: answers with its progress instead of launching while it is not there.
-engine = Engine(binary_path=plan.engine_here().get("binary_path"))
+def process_engine(env: Optional[Mapping[str, str]] = None) -> Engine:
+    """This process's engine, from the environment `env` (this process's when
+    None): the binary `STEALTHFOX_BINARY` names, read by `plan.engine_here`,
+    or the one the core downloads. A function rather than an expression at
+    import so the one-reader property can be checked against a given
+    environment: the module global below is built once, at import, from an
+    environment a test cannot reproduce afterwards."""
+    return Engine(binary_path=plan.engine_here(env).get("binary_path"))
+
+
+engine = process_engine()
 work = Work(_SESSION_ID, engine=engine)
 
 
@@ -495,9 +505,9 @@ async def browser_navigate(url: str, wait_until: str = "domcontentloaded",
     mistake this reply exists to prevent.
 
     If the page you were on navigates itself at that moment (a redirect on a
-    timer), Firefox can follow it instead, and the answer is an error saying
-    "interrupted by another navigation to" a url. The browser is on that url,
-    and you can navigate again from there.
+    timer), Firefox can follow it instead: the error says "interrupted by
+    another navigation to" a url, and the browser is there. NS_BINDING_ABORTED
+    means that page's navigation stopped yours: browser_snapshot says where.
 
     wait_until is "domcontentloaded" by default, which returns as soon as the
     markup is parsed. Use "load" when the page needs its images and stylesheets,

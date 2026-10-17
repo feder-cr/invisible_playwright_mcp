@@ -261,13 +261,27 @@ async def test_the_frame_comes_back_after_the_window_was_minimised():
     session now notices the silence and starts the capture again, and this is
     the arm that proves it against the real engine.
 
-    Known-bad: `StealthSession.STALE_AFTER = 1e9` (no restart) - the frame
-    after the restore is still the frame from before the minimise.
+    Known-bad on firefox-29: `StealthSession.STALE_AFTER = 1e9` (no restart) -
+    the frame after the restore is still the frame from before the minimise.
+    ⛔ ON FIREFOX-49 THAT KNOWN-BAD NO LONGER REDDENS THIS TEST: measured
+    2026-10-17 in a visible session, the capture outlives the minimise, and
+    with the restart switched off the frame still came back. So this arm now
+    proves that a minimised and restored window is watched again, whoever
+    restarts what; the restart itself is proved without a browser by the
+    clock tests above, which drive a silent capture on purpose.
+
+    ⛔ A VISIBLE SESSION, because that is the only one a person can minimise.
+    Until 0.72.3 it was `headless=True`, which since 2026-09-20 creates the
+    browser on a hidden Win32 desktop, where `EnumWindows` from the desktop
+    the test runs on finds nothing: red on every run, "the probe window was
+    not found on screen within 5 s", on the published pair too (B332). The
+    window is on screen for the few seconds the test minimises and restores
+    it.
     """
     import ctypes
 
     user32 = ctypes.windll.user32
-    s = StealthSession(binary_path=BINARY, headless=True)
+    s = StealthSession(binary_path=BINARY, headless=False)
     await s.start()
     try:
         await s.new_page()

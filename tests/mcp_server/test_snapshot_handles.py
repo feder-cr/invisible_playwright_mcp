@@ -209,26 +209,30 @@ def test_an_element_with_nothing_at_all_gets_no_handle_rather_than_a_bad_one(pag
 
 
 @pytest.mark.e2e
-def test_one_impossible_element_does_not_cost_the_page(page):
+def test_a_page_that_breaks_its_own_measuring_does_not_break_the_snapshot(page):
     """Measured on a real site: the snapshot died inside getBoundingClientRect
     with "can't access property width, r is undefined", and the caller received
-    nothing at all for the whole document.
+    nothing at all for the whole document - a page can shadow or replace that
+    method, and some do.
 
-    Nothing is the worst possible answer. It is worse than a partial list, and
-    it is indistinguishable from a page with no controls on it, so the caller
-    cannot even tell that something went wrong. A page can shadow or replace
-    that method, and some do.
+    Until firefox-49 the snapshot ran where the page's replacement was the
+    method, so the best it could do was skip the element and count it. From
+    firefox-49 it runs in the caller's world, where a name the standard defines
+    is the browser's own wherever the page redefined it ([B322], B335): the
+    element is measured with the real method and reported like the others, and
+    the page never sees the call. The title is how the page shows that its
+    replacement is in force in its own world; the snapshot is not fooled by it.
     """
     body = ("<a href='/uno' id='primo'>uno</a>"
             "<button id='rotto'>broken</button>"
             "<a href='/due' id='terzo'>due</a>"
-            "<script>document.getElementById('rotto')"
-            ".getBoundingClientRect = function () { return undefined; };</script>")
+            "<script>const b = document.getElementById('rotto');"
+            "b.getBoundingClientRect = function () { return undefined; };"
+            "document.title = 'page sees ' + typeof b.getBoundingClientRect();</script>")
     elements = _load(page, body)
+    assert page.title() == "page sees undefined", "the page's replacement never took effect"
     texts = [e.get("text") for e in elements]
-    assert "uno" in texts and "due" in texts, (
-        f"one broken element cost the others: {texts}")
-    assert "broken" not in texts, "the element with no rectangle was reported anyway"
+    assert texts == ["uno", "broken", "due"], texts
 
 
 @pytest.mark.e2e
@@ -299,30 +303,38 @@ def test_elements_that_cannot_be_measured_are_counted_not_hidden(page):
     """A guard that swallows is worse than the crash it replaces.
 
     The first version returned false when getBoundingClientRect misbehaved, so a
-    page replacing it on Element.prototype - the exact case the guard names -
-    produced an empty list with no error, byte-identical to a page with no
-    controls. The crash at least named its cause. Counting separates the two:
-    one odd element leaves the rest and says 1, a shadowed prototype leaves
-    nothing and says how many it could not read.
+    page replacing it on Element.prototype produced an empty list with no
+    error, byte-identical to a page with no controls. The crash at least named
+    its cause. Counting separates the two: what could not be read is said, with
+    how many.
+
+    Since firefox-49 no SCRIPT can cause it: in the caller's world, where the
+    snapshot runs, a name the standard defines is the browser's own whoever
+    replaces it - the page (measured below: both controls listed) and the
+    caller alike (measured: a replacement made in the very call of the
+    snapshot changed nothing). What is left to reach the count is a native
+    failure, which no page can produce on demand, so the count is driven
+    through the snapshot's own source with its measuring made to give
+    nothing: the mechanism under test is the answer the caller gets, not the
+    way the measuring failed.
     """
-    one_bad = ("<a href='/a' id='p'>one</a><button id='x'>bad</button>"
-               "<a href='/b' id='t'>two</a>"
-               "<script>document.getElementById('x')"
-               ".getBoundingClientRect = () => undefined;</script>")
-    page.goto("data:text/html," + __import__("urllib.parse", fromlist=["quote"]).quote(
-        f"<html><body>{one_bad}</body></html>"))
-    page.wait_for_timeout(250)
-    d = page.evaluate(actions.SNAPSHOT_JS)
-    assert len(d["interactive_elements"]) == 2
-    assert d.get("unmeasurable") == 1, f"the skipped element was not counted: {d}"
+    from urllib.parse import quote
 
     tampered = ("<a href='/a'>one</a><button>two</button>"
-                "<script>Element.prototype.getBoundingClientRect = () => undefined;</script>")
-    page.goto("data:text/html," + __import__("urllib.parse", fromlist=["quote"]).quote(
-        f"<html><body>{tampered}</body></html>"))
+                "<script>Element.prototype.getBoundingClientRect = () => undefined;"
+                "document.title = 'page sees ' + typeof document.body"
+                ".getBoundingClientRect();</script>")
+    page.goto("data:text/html," + quote(f"<html><body>{tampered}</body></html>"))
     page.wait_for_timeout(250)
+    assert page.title() == "page sees undefined", "the page's replacement never took effect"
     d = page.evaluate(actions.SNAPSHOT_JS)
+    assert [e.get("text") for e in d["interactive_elements"]] == ["one", "two"], d
+    assert "unmeasurable" not in d, d
+
+    measuring = "try { r = el.getBoundingClientRect(); }"
+    assert actions.SNAPSHOT_JS.count(measuring) == 1, "the guarded measuring moved: update this test"
+    d = page.evaluate(actions.SNAPSHOT_JS.replace(measuring, "try { r = undefined; }"))
     assert d["interactive_elements"] == []
     assert d.get("unmeasurable", 0) >= 2, (
-        "a page-wide tampering is indistinguishable from a page with no "
-        f"controls, which is the defect this counter exists to remove: {d}")
+        "nothing could be measured and the answer does not say so: it reads "
+        f"as a page with no controls, which is the defect this counter removes: {d}")
