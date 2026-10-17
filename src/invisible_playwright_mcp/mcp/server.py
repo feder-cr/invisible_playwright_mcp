@@ -505,9 +505,9 @@ async def browser_navigate(url: str, wait_until: str = "domcontentloaded",
     mistake this reply exists to prevent.
 
     If the page you were on navigates itself at that moment (a redirect on a
-    timer), Firefox can follow it instead: the error says "interrupted by
-    another navigation to" a url, and the browser is there. NS_BINDING_ABORTED
-    means that page's navigation stopped yours: browser_snapshot says where.
+    timer), Firefox can follow it instead, and the answer is an error saying
+    "interrupted by another navigation to" a url. The browser is on that url,
+    and you can navigate again from there.
 
     wait_until is "domcontentloaded" by default, which returns as soon as the
     markup is parsed. Use "load" when the page needs its images and stylesheets,
