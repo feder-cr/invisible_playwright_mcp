@@ -11,7 +11,7 @@ import weakref
 from collections import OrderedDict
 from dataclasses import dataclass, field
 from functools import wraps
-from typing import Any, Mapping
+from typing import Any, Iterator, Mapping
 
 from ..quiet import swallow
 
@@ -49,6 +49,34 @@ class Limits:
 def redact_headers(headers: Mapping[str, str]) -> dict[str, str]:
     return {name: "[redacted]" if name.lower() in REDACTED_HEADERS else value
             for name, value in headers.items()}
+
+
+def _project(data: dict, *, include_bodies: bool, include_headers: bool | list[str],
+             strip_query: bool) -> dict:
+    item = {k: v for k, v in data.items()
+            if k not in {"request_headers", "response_headers"}
+            and (include_bodies or k not in {"post_data", "response_body"})}
+    if include_headers:
+        allow = None if isinstance(include_headers, bool) else {
+            name.lower() for name in include_headers}
+        for key in ("request_headers", "response_headers"):
+            headers = data.get(key) or {}
+            item[key] = {name: value for name, value in headers.items()
+                         if allow is None or name.lower() in allow}
+    if strip_query and isinstance(item.get("url"), str):
+        item["url"] = item["url"].split("?", 1)[0]
+    return copy.deepcopy(item)
+
+
+def _match(key: int, data: dict, *, since_id: int | None, url_contains: str | None,
+           resource_types: list[str] | None, methods: set[str] | None,
+           include_preflight: bool) -> bool:
+    return not (
+        (since_id is not None and key <= since_id)
+        or (url_contains is not None and url_contains not in data["url"])
+        or (resource_types is not None and data["resource_type"] not in resource_types)
+        or (methods is not None and data["method"].upper() not in methods)
+        or (not include_preflight and data["method"].upper() == "OPTIONS"))
 
 
 def _passive(fn):
@@ -279,38 +307,58 @@ class Network:
             if key not in self._rows:
                 del self._requests[request]
 
-    def entries(self, *, url_contains: str | None = None,
-                resource_types: list[str] | None = None, since_id: int | None = None,
-                include_bodies: bool = False, max_entries: int = DEFAULT_MAX_ENTRIES) -> dict:
-        if max_entries <= 0:
-            raise ValueError("max_entries must be a positive integer")
+    def stream(self, *, url_contains: str | None = None,
+               resource_types: list[str] | None = None, methods: list[str] | None = None,
+               since_id: int | None = None, include_bodies: bool = False,
+               include_headers: bool | list[str] = False, include_preflight: bool = False,
+               strip_query: bool = False) -> Iterator[dict]:
         if since_id is not None and since_id < 0:
             raise ValueError("since_id must be nonnegative")
+        allowed_methods = None if methods is None else {method.upper() for method in methods}
+        for key, row in self._rows.items():
+            if _match(key, row.data, since_id=since_id, url_contains=url_contains,
+                      resource_types=resource_types, methods=allowed_methods,
+                      include_preflight=include_preflight):
+                yield _project(row.data, include_bodies=include_bodies,
+                               include_headers=include_headers, strip_query=strip_query)
+
+    def metadata(self) -> dict:
+        return {
+            "dropped": self._dropped, "capacity": self.limits.entries,
+            "stored_body_bytes": self._stored_bytes, "note": PAGE_DATA_NOTE,
+            "request_bodies": self._request_bodies,
+        }
+
+    def entries(self, *, url_contains: str | None = None,
+                resource_types: list[str] | None = None, methods: list[str] | None = None,
+                since_id: int | None = None, include_bodies: bool = False,
+                include_headers: bool | list[str] = False, include_preflight: bool = False,
+                strip_query: bool = False, max_entries: int = DEFAULT_MAX_ENTRIES,
+                max_bytes: int | None = None) -> dict:
+        if max_entries <= 0:
+            raise ValueError("max_entries must be a positive integer")
+        if max_bytes is not None and max_bytes <= 0:
+            raise ValueError("max_bytes must be a positive integer")
+        budget = RESPONSE_BYTES if max_bytes is None else min(max_bytes, RESPONSE_BYTES)
         rows = []
         size = 0
         more = False
-        for key, row in self._rows.items():
-            data = row.data
-            if ((since_id is not None and key <= since_id)
-                    or (url_contains is not None and url_contains not in data["url"])
-                    or (resource_types is not None and data["resource_type"] not in resource_types)):
-                continue
+        for item in self.stream(url_contains=url_contains, resource_types=resource_types,
+                                methods=methods, since_id=since_id, include_bodies=include_bodies,
+                                include_headers=include_headers, include_preflight=include_preflight,
+                                strip_query=strip_query):
             if len(rows) >= max_entries:
                 more = True
                 break
-            item = copy.deepcopy({k: v for k, v in data.items()
-                                  if include_bodies or k not in {"post_data", "response_body"}})
             size += len(json.dumps(item))
-            if rows and size > RESPONSE_BYTES:
+            if rows and size > budget:
                 more = True
                 break
             rows.append(item)
         return {
             "entries": rows, "next_since_id": rows[-1]["id"] if rows else None, "more": more,
-            "dropped": self._dropped, "capacity": self.limits.entries,
+            **self.metadata(),
             "body_bytes": self.limits.body_bytes, "total_body_bytes": self.limits.total_body_bytes,
-            "stored_body_bytes": self._stored_bytes, "note": PAGE_DATA_NOTE,
-            "request_bodies": self._request_bodies,
         }
 
     def clear(self) -> dict:

@@ -94,7 +94,7 @@ async def finish(capture, context, request):
 
 
 def rows(capture, **kwargs):
-    return capture.entries(include_bodies=True, **kwargs)["entries"]
+    return capture.entries(include_bodies=True, include_headers=True, **kwargs)["entries"]
 
 
 async def test_full_entry_and_lengths_only_default():
@@ -157,7 +157,10 @@ def test_ring_eviction_filters_and_paging_oldest_first():
     assert capture.entries()["capacity"] == 3
 
 
-@pytest.mark.parametrize("kwargs", [{"max_entries": 0}, {"max_entries": -1}, {"since_id": -1}])
+@pytest.mark.parametrize("kwargs", [
+    {"max_entries": 0}, {"max_entries": -1}, {"since_id": -1},
+    {"max_bytes": 0}, {"max_bytes": -1},
+])
 def test_invalid_filters_refuse(kwargs):
     capture, _ = recorder()
     with pytest.raises(ValueError):
@@ -354,7 +357,7 @@ def test_body_capable_methods_without_data_while_off_name_the_opt_in(method):
     capture, context = recorder()
     request = Request(method=method, body=None)
     context.emit("request", request)
-    assert rows(capture)[0]["post_data_state"] == network.REQUEST_BODIES_HINT
+    assert rows(capture, include_preflight=True)[0]["post_data_state"] == network.REQUEST_BODIES_HINT
     assert capture.entries()["request_bodies"] is False
 
 
@@ -601,8 +604,14 @@ async def test_tools_preserve_large_json_shape_and_browser_isolation(monkeypatch
     assert json.loads(await server.browser_network())["entries"] == []
     assert len(json.loads(await server.browser_network(browser="support"))["entries"]) == 1
     tools = {tool.name: tool for tool in await server.mcp.list_tools()}
-    assert tools["browser_network"].inputSchema["properties"]["max_entries"]["default"] == (
-        network.DEFAULT_MAX_ENTRIES)
+    properties = tools["browser_network"].inputSchema["properties"]
+    assert properties["max_entries"]["default"] == network.DEFAULT_MAX_ENTRIES
+    for name in ("include_headers", "include_preflight", "strip_query"):
+        assert properties[name]["default"] is False
+    for name in ("methods", "max_bytes"):
+        assert properties[name]["default"] is None
+    assert {choice["type"] for choice in properties["include_headers"]["anyOf"]} == {
+        "boolean", "array"}
     assert tools["browser_network_capture"].inputSchema["required"] == ["request_bodies"]
     for name in ("browser_network", "browser_network_clear", "browser_network_capture"):
         assert tools[name].annotations.openWorldHint is False
@@ -641,7 +650,8 @@ def test_a_large_answer_stops_early_and_says_there_is_more():
     for i in range(1, 6):
         capture._last_id = i
         capture._rows[i] = net._Entry({"id": i, "url": "https://a/%d" % i,
-                                       "resource_type": "xhr", "response_body": big})
+                                       "method": "GET", "resource_type": "xhr",
+                                       "response_body": big})
     first = capture.entries(include_bodies=True)
     assert first["more"] is True
     assert 1 <= len(first["entries"]) < 5
@@ -650,3 +660,81 @@ def test_a_large_answer_stops_early_and_says_there_is_more():
     plain = capture.entries(max_entries=2)
     assert [e["id"] for e in plain["entries"]] == [1, 2] and plain["more"] is True
     assert capture.entries()["more"] is False
+
+
+@pytest.mark.parametrize("include_headers,expected", [
+    (False, None),
+    (True, {"Cookie": "[redacted]", "AUTHORIZATION": "[redacted]", "X-Keep": "visible"}),
+    (["cOoKiE", "authorization"], {"Cookie": "[redacted]", "AUTHORIZATION": "[redacted]"}),
+    (["missing"], {}), ([], None),
+])
+async def test_header_projection_is_optional_redacted_and_shared(include_headers, expected):
+    capture, context = recorder()
+    request = Request(headers={"Cookie": "cookie-secret", "AUTHORIZATION": "auth-secret",
+                               "X-Keep": "visible"})
+    request.reply.headers = request.headers
+    context.emit("request", request)
+    await finish(capture, context, request)
+    default = capture.entries()["entries"][0]
+    assert "request_headers" not in default and "response_headers" not in default
+    out = capture.entries(include_headers=include_headers)["entries"]
+    assert out == list(capture.stream(include_headers=include_headers))
+    row = out[0]
+    for field in ("request_headers", "response_headers"):
+        if expected is None:
+            assert field not in row
+        else:
+            assert row[field] == expected
+            # The returned map is a copy; mutating it cannot reach the store.
+            row[field].clear()
+            assert capture.entries(include_headers=True)["entries"][0][field]["Cookie"] == "[redacted]"
+
+
+@pytest.mark.parametrize("method", ["OPTIONS", "options"])
+def test_preflights_are_opt_in_and_filters_combine(method):
+    capture, context = recorder()
+    for verb in (method, "GET"):
+        context.emit("request", Request(method=verb))
+    assert [r["id"] for r in capture.entries()["entries"]] == [2]
+    assert [r["id"] for r in capture.stream()] == [2]
+    assert [r["id"] for r in capture.entries(include_preflight=True)["entries"]] == [1, 2]
+    assert capture.entries(methods=["options"])["entries"] == []
+    both = capture.entries(methods=["options"], include_preflight=True)["entries"]
+    assert [r["id"] for r in both] == [1]
+
+
+@pytest.mark.parametrize("methods,expected", [(["post"], [2, 3]), ([], [])])
+def test_methods_are_case_insensitive(methods, expected):
+    capture, context = recorder()
+    for method in ("GET", "POST", "post", "DELETE"):
+        context.emit("request", Request(method=method))
+    assert [r["id"] for r in capture.entries(methods=methods)["entries"]] == expected
+    assert [r["id"] for r in capture.stream(methods=methods)] == expected
+
+
+def test_query_stripping_does_not_change_matching_or_stored_urls():
+    capture, context = recorder()
+    url = "https://site.test/api?token=secret?extra=1"
+    context.emit("request", Request(url=url))
+    out = capture.entries(url_contains="token=secret", strip_query=True)["entries"]
+    assert out[0]["url"] == "https://site.test/api"
+    assert capture.entries()["entries"][0]["url"] == url
+
+
+def test_tiny_byte_budget_keeps_one_match_and_a_usable_cursor():
+    capture, context = recorder()
+    for _ in range(3):
+        context.emit("request", Request())
+    since_id = None
+    for key in range(1, 4):
+        out = capture.entries(max_bytes=1, since_id=since_id)
+        assert [r["id"] for r in out["entries"]] == [key]
+        assert out["more"] is (key < 3)
+        since_id = out["next_since_id"]
+    assert capture.entries(max_bytes=1, since_id=since_id)["entries"] == []
+
+
+def test_stream_refuses_negative_since_id():
+    capture, _ = recorder()
+    with pytest.raises(ValueError, match="since_id"):
+        list(capture.stream(since_id=-1))
