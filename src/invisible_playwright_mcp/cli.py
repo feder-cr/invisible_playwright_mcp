@@ -7,6 +7,7 @@ import sys
 
 import click
 
+from . import env as environment
 from . import storage
 from .llm import BASE_URL, resolve_key, resolve_model
 from .runner import forget_key
@@ -219,11 +220,14 @@ def _serve() -> None:
               help="OpenRouter API key (or env OPENROUTER_API_KEY). Required: "
                    "the interface does not start without a model.")
 @click.option("--model", default=None, help="Model id (or env INVISIBLE_MCP_MODEL).")
+@click.option("--web-search", type=click.Choice(["browser", "parallel"]),
+              default="browser", show_default=True, envvar=environment.WEB_SEARCH,
+              help="Use browser search or opt in to anonymous Parallel search/fetch.")
 @click.option("--host", default="127.0.0.1", show_default=True,
               help="Interface bind address. Leave it on loopback unless you mean it.")
 @click.option("--port", type=int, default=8765, show_default=True)
 @browser_options
-def ui(openrouter_key, model, host, port, proxy, seed, headed, binary, profile_dir):
+def ui(openrouter_key, model, web_search, host, port, proxy, seed, headed, binary, profile_dir):
     """Serve the two-pane interface: conversation left, live browser right.
 
     Requires an OpenRouter key: an agent is a model with a browser, and
@@ -274,7 +278,7 @@ def ui(openrouter_key, model, host, port, proxy, seed, headed, binary, profile_d
     async def serve() -> None:
         import uvicorn
 
-        sessions = Sessions(opts, key, lambda: OpenRouterBrain(client, mdl),
+        sessions = Sessions(opts, key, lambda: OpenRouterBrain(client, mdl, web_search=web_search),
                             model_label=mdl)
         # ⛔ THE DEFAULT CONVERSATION IS STARTED EAGERLY, EVERY OTHER ONE
         # LAZILY. Every conversation spawns its own server now, on first use -

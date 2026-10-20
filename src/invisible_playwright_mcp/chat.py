@@ -119,7 +119,8 @@ class ChatService:
         with swallow("a write that fails costs the saved conversation and nothing else"):
             chats.save_chat(self.session_id, self.name, self.history,
                             said_only(getattr(self._brain, "messages", None)),
-                            self.usage)
+                            self.usage,
+                            search_session_id=getattr(self._brain, "search_session_id", None))
 
     def restore(self) -> bool:
         """Read this conversation back, if one was saved. Answers whether it was.
@@ -139,6 +140,11 @@ class ChatService:
         remember = getattr(self._brain, "remember", None)
         if callable(remember) and messages:
             remember(messages, saved.get("usage") or {})
+        if saved.get("search_session_id") and hasattr(self._brain, "search_session_id"):
+            try:
+                self._brain.search_session_id = saved["search_session_id"]
+            except (ValueError, TypeError, AttributeError):
+                pass  # An older or damaged file cannot provide a valid UUID.
         return True
 
     def subscribe(self) -> asyncio.Queue:

@@ -35,6 +35,8 @@ log = logging.getLogger("invisible_playwright_mcp")
 HOME = "INVISIBLE_MCP_HOME"
 #: The OpenRouter model id the interface and the agent use.
 MODEL = "INVISIBLE_MCP_MODEL"
+#: Optional public search service for the standalone agent; browser by default.
+WEB_SEARCH = "INVISIBLE_MCP_WEB_SEARCH"
 #: Which saved session this process serves. Set by `runner.child_env` for a
 #: server it spawns, and read once at import by `mcp.server`.
 SESSION_ID = "INVISIBLE_MCP_SESSION_ID"

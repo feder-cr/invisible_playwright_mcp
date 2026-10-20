@@ -157,6 +157,34 @@ This automates a browser under your control. Read the terms of the sites you
 point it at, respect their rate limits, and do not submit anything a human has
 not read.
 
+## Optional web search in the standalone agent
+
+The UI normally searches through the browser, using Brave without a search API
+key. To give the agent direct public-web search and page excerpts, run:
+
+```bash
+uvx invisible-playwright-mcp ui --web-search parallel
+```
+
+[Parallel Search MCP](https://docs.parallel.ai/integrations/mcp/search-mcp)
+provides `web_search` and `web_fetch` without a Parallel account or API key.
+Search uses Fast mode. The free service has usage limits; a failed request is
+reported in the conversation. The agent can use returned source URLs in its
+answer or open them with the browser for interaction.
+
+You can also set `INVISIBLE_MCP_WEB_SEARCH=parallel` in your shell or `.env`.
+An explicit `--web-search browser` overrides that setting and disables the
+Parallel connection. The OpenRouter model and key are configured as before.
+This option belongs to the standalone UI; it does not add tools to the browser
+MCP server installed in another assistant.
+
+Search and fetch go directly to Parallel, outside the browser: they do not use
+its proxy, cookies or logged-in sessions. Use the browser for authenticated or
+private pages. Each conversation has a random search identifier, saved locally
+with its transcript and reused for follow-ups; resetting the conversation starts
+a new identifier. Requests time out after 30 seconds of waiting for a response,
+and the UI's stop button cancels work in progress.
+
 ## Privacy Policy
 
 This browser agent runs on your machine and has no server of its own. What
@@ -166,6 +194,11 @@ leaves your computer, and to whom:
 - **Your model provider.** The web UI sends the conversation and what the agent
   reads on the page to OpenRouter under your key. Over MCP, the client you
   plugged it into does the same with whichever model it uses.
+- **Parallel, when you opt in with `--web-search parallel`.** Search objectives,
+  queries, fetch URLs, the configured model name and a random conversation
+  identifier are sent to `https://search.parallel.ai/mcp`. The service sees your
+  IP address and the package User-Agent. Returned excerpts join the conversation
+  sent to OpenRouter. See [Parallel's privacy policy](https://parallel.ai/privacy-policy).
 - **GitHub.** The engine is downloaded from a GitHub release the first time
   the server or the interface starts, and a GeoIP database is when a proxy is
   set. Each browser launch also fetches a one-line counter file from a GitHub
@@ -176,7 +209,8 @@ leaves your computer, and to whom:
 Nothing else is collected and nothing is sent to the author. Sessions,
 profiles and screenshots are stored locally, under `INVISIBLE_MCP_HOME` if set and
 otherwise in the application-data directory of your system, and are yours to
-delete; nothing is retained anywhere else. Questions go to the
+delete. The services above process the requests sent to them under their own
+policies. Questions go to the
 [issues](https://github.com/feder-cr/invisible_playwright_mcp/issues).
 
 ## License
