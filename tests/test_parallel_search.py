@@ -278,13 +278,19 @@ def test_invalid_search_choice_is_rejected_before_startup():
     assert "Invalid value for '--web-search'" in result.output
 
 
-async def test_http_failure_is_reported_without_fallback(peer):
+async def test_http_failure_is_reported_without_fallback(peer, monkeypatch):
+    from datetime import timedelta
+
+    monkeypatch.setattr(search, "TIMEOUT", timedelta(milliseconds=100))
     peer.state["http_error"] = True
     brain = OpenRouterBrain(Model(query(), "Unavailable"), "model", web_search="parallel")
     browser = Browser()
     service = ChatService(browser, brain)
     await service.send("Search")
-    assert any(event["kind"] == "err" and "503" in event["text"]
+    # SDK 1.8 logs HTTP errors and the waiting caller receives a timeout;
+    # current SDKs propagate the HTTP cause. Both must be visible failures.
+    assert any(event["kind"] == "err" and
+               ("503" in event["text"] or "Timed out" in event["text"])
                for event in service.history)
     assert browser.calls == []
     assert len(peer.calls) == 1
