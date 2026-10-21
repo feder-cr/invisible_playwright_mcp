@@ -43,7 +43,8 @@ def chat_path(session_id: str) -> Path:
 
 
 def save_chat(session_id: str, name: str, history: List[dict],
-              messages: List[dict], usage: Optional[dict] = None) -> Path:
+              messages: List[dict], usage: Optional[dict] = None, *,
+              search_session_id: str | None = None) -> Path:
     """Write one conversation down. Returns where it went."""
     where = chat_path(session_id)
     payload = {
@@ -54,6 +55,8 @@ def save_chat(session_id: str, name: str, history: List[dict],
         "messages": messages,
         "usage": usage or {},
     }
+    if search_session_id is not None:
+        payload["search_session_id"] = search_session_id
     blob = json.dumps(payload, indent=2).encode("utf-8")
     write_atomically(where, blob)
     return where

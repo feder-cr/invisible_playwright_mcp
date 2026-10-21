@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from uuid import UUID, uuid4
 from typing import Awaitable, Callable, List, Optional
 
 from . import actions_help
@@ -424,7 +425,11 @@ class OpenRouterBrain(Brain):
     implementation removed in 0.4.0. One consumer of one loop is one file.
     """
 
-    def __init__(self, client, model: str) -> None:
+    def __init__(self, client, model: str, *, web_search: str = "browser") -> None:
+        if web_search not in ("browser", "parallel"):
+            raise ValueError("web_search must be browser or parallel")
+        self.web_search = web_search
+        self._search_session_id = str(uuid4())
         self._convo = Conversation(client, model)
 
     def forget(self) -> None:
@@ -436,6 +441,7 @@ class OpenRouterBrain(Brain):
         still means something or it does not.
         """
         self._convo = Conversation(self._convo.client, self._convo.model)
+        self._search_session_id = str(uuid4())
 
     def remember(self, messages: list, usage: dict | None = None) -> None:
         """Take up a transcript that was written down, and continue it.
@@ -467,6 +473,15 @@ class OpenRouterBrain(Brain):
             self._convo.usage.update(usage)
 
     @property
+    def search_session_id(self) -> str:
+        """Opaque conversation identity, persisted independently of the model."""
+        return self._search_session_id
+
+    @search_session_id.setter
+    def search_session_id(self, value: str) -> None:
+        self._search_session_id = str(UUID(value))
+
+    @property
     def usage(self) -> dict:
         return self._convo.usage
 
@@ -480,6 +495,21 @@ class OpenRouterBrain(Brain):
         # the ceiling is gone, and every remaining failure is either the
         # cancellation the stop button raises or something the interface's own
         # handler already reports.
-        await self._convo.run(text, link.call, link.tools,
-                              instructions=getattr(link, "instructions", ""),
-                              say=say, describe=actions_help.summarise)
+        instructions = getattr(link, "instructions", "")
+        if self.web_search == "browser":
+            await self._convo.run(text, link.call, link.tools,
+                                  instructions=instructions,
+                                  say=say, describe=actions_help.summarise)
+            return
+
+        from .search import INSTRUCTIONS, NAMES, parallel_tools
+
+        async with parallel_tools(self.search_session_id, self._convo.model) as (tools, search):
+            async def call(name, arguments):
+                if name in NAMES:
+                    return await search(name, arguments)
+                return await link.call(name, arguments)
+
+            await self._convo.run(text, call, [*link.tools, *tools],
+                                  instructions=instructions + "\n\n" + INSTRUCTIONS,
+                                  say=say, describe=actions_help.summarise)
