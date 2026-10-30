@@ -18,8 +18,10 @@ def proxy_from_url(url: str | None) -> dict[str, str] | None:
         raise ValueError(
             f"proxy URL {url!r} has no port; use e.g. http://host:8080"
         )
+    host = f"[{parsed.hostname}]" if ":" in parsed.hostname else parsed.hostname
+
     out: dict[str, str] = {
-        "server": f"{parsed.scheme}://{parsed.hostname}:{parsed.port}",
+        "server": f"{parsed.scheme}://{host}:{parsed.port}",
     }
     if parsed.username:
         out["username"] = unquote(parsed.username)

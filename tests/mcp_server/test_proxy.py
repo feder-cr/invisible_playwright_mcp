@@ -28,3 +28,14 @@ def test_socks5_scheme_preserved():
 def test_missing_port_raises():
     with pytest.raises(ValueError):
         proxy_from_url("http://host.example")
+
+def test_ipv6_host_preserves_brackets():
+    d = proxy_from_url("http://[::1]:8080")
+
+    assert d["server"] == "http://[::1]:8080"
+
+    user_pass = proxy_from_url("http://user:pass@[::1]:8080")
+
+    assert user_pass["server"] == "http://[::1]:8080"
+    assert user_pass["username"] == "user"
+    assert user_pass["password"] == "pass"
