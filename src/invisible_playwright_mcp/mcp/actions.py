@@ -1385,6 +1385,12 @@ async def set_viewport(session, width=None, height=None) -> str:
     if (width is None) != (height is None):
         raise ValueError("give both width and height, or neither to restore "
                          "this browser's own size")
+    # Sizing comes before the first navigation in a responsive check (open,
+    # size, then load the page at that size), and a fresh browser has no page
+    # yet. Open one the way browser_navigate does; the size stays with that
+    # page through every navigation after it.
+    if not session.pages():
+        await session.new_page()
     page = session.page()
     before = await window_metrics(page)
     own = getattr(session, "own_viewport", None)
