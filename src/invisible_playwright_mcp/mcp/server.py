@@ -696,6 +696,22 @@ async def browser_press_key(key: str, browser: Browser = None) -> str:
     return await work.acting(actions.press_key, key, role=browser)
 
 
+@mcp.tool(annotations=_says("Resize the page", open_world=False))
+async def browser_set_viewport(width: int | None = None, height: int | None = None,
+                               browser: Browser = None) -> str:
+    """Resize the page's content area to width x height CSS pixels, for a
+    responsive check (e.g. 1440x900, 1024x768, 390x844). Neither restores
+    this browser's own size.
+
+    Not a phone: user agent, screen, devicePixelRatio and touch stay the
+    identity's desktop. The window still reads maximized, so a page comparing
+    outerWidth with innerWidth can tell; restore when the check is done.
+    Larger than the browser's own screen is refused. Answers JSON with the
+    size the page now reads. A page the site opens, or a reopen, starts at the
+    own size."""
+    return await work.acting(actions.set_viewport, width, height, role=browser)
+
+
 @mcp.tool(annotations=_says("Read the page with JavaScript", read_only=True))
 async def browser_evaluate(expression: str, browser: Browser = None) -> str:
     """READ from the page with JavaScript and get the result as JSON.

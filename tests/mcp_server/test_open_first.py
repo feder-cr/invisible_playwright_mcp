@@ -118,6 +118,7 @@ EVERY_TOOL = [
     ("browser_upload_files", {"selector": "#f", "paths": ["/tmp/a.pdf"]}),
     ("browser_evaluate", {"expression": "1"}),
     ("browser_status", {}),
+    ("browser_set_viewport", {"width": 390, "height": 844}),
 ]
 
 

@@ -1331,6 +1331,105 @@ async def press_key(session, key: str) -> str:
     return f"pressed {key}"
 
 
+# --- the viewport ----------------------------------------------------------
+#
+# ⛔ THE CONTENT AREA, NOT AN EMULATED PHONE, AND NOT A CONSISTENT WINDOW.
+# This sets the area the page lays out in, which is what a responsive check
+# needs: CSS width breakpoints, `innerWidth`, `matchMedia('(max-width: ...)')`.
+# The user agent, `devicePixelRatio`, `screen.*`, touch support and
+# `pointer: fine` stay the identity's desktop. A phone-sized viewport claiming
+# a phone's screen and touch with a desktop's user agent, GPU and fonts would
+# be a combination nobody produces, so it is not offered.
+#
+# The window does NOT follow. The engine declares every window maximized: it
+# answers `outerWidth`/`outerHeight` from the screen and the measured Windows
+# frame (WINDOW_FRAME_BY_DPR in invisible_core), not from the content area.
+# Measured on the browser host on 2026-11-01, seed-drawn 1920x1080 identity:
+# before, inner 1920x947 in an outer 1936x1048; after a 390x844 resize, inner
+# 390x844 in the same outer 1936x1048. Retail Firefox maximized answers
+# outerWidth - innerWidth = 16, so a page that compares the two can see a
+# window no real Firefox shows (responsive design mode in DevTools is the
+# closest real case). Making the window follow needs the engine to answer a
+# non-maximized frame; that is a firefox_antidetect_patch change, not one this
+# wrapper can make. So: resize for a check, then restore with no arguments.
+# A size larger than the screen is refused outright.
+
+#: The narrowest and shortest content area accepted, CSS pixels. Below the
+#: narrowest phones (320) nothing a responsive check needs is lost.
+VIEWPORT_MIN = 200
+
+_WINDOW_METRICS_JS = """() => ({
+  inner: [innerWidth, innerHeight], outer: [outerWidth, outerHeight],
+  screen: [screen.width, screen.height],
+  avail: [screen.availWidth, screen.availHeight], dpr: devicePixelRatio})"""
+
+
+async def window_metrics(page) -> dict:
+    """What the page itself reads about its window, its screen and its DPR."""
+    return await page.evaluate(_WINDOW_METRICS_JS)
+
+
+def _viewport_dimension(name: str, value) -> int:
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or value != int(value):
+        raise ValueError("%s must be a whole number of CSS pixels" % name)
+    if value < VIEWPORT_MIN:
+        raise ValueError("%s must be at least %d CSS pixels" % (name, VIEWPORT_MIN))
+    return int(value)
+
+
+async def set_viewport(session, width=None, height=None) -> str:
+    """Resize the page's content area to `width` x `height` CSS pixels, or
+    with neither, back to the identity's own size. Answers JSON with what the
+    page reads afterwards, so the caller sees the size it got, not the one it
+    asked for."""
+    if (width is None) != (height is None):
+        raise ValueError("give both width and height, or neither to restore "
+                         "this browser's own size")
+    page = session.page()
+    before = await window_metrics(page)
+    own = getattr(session, "own_viewport", None)
+    if own is None:
+        # Remembered at the first change, never later: after one resize the
+        # page's size is ours, not the identity's.
+        size = page.viewport_size
+        own = ({"width": size["width"], "height": size["height"]} if size else
+               {"width": before["inner"][0], "height": before["inner"][1]})
+        session.own_viewport = own
+    if width is None:
+        wanted = dict(own)
+    else:
+        wanted = {"width": _viewport_dimension("width", width),
+                  "height": _viewport_dimension("height", height)}
+        screen_w, screen_h = before["screen"]
+        if wanted["width"] > screen_w or wanted["height"] > screen_h:
+            raise ValueError(
+                "refused: %dx%d is larger than this browser's own screen (%dx%d). "
+                "A content area bigger than its screen is a window no real "
+                "machine shows; nothing was changed."
+                % (wanted["width"], wanted["height"], screen_w, screen_h))
+    await page.set_viewport_size(wanted)
+    after = await window_metrics(page)
+    answer = {
+        "viewport": {"width": after["inner"][0], "height": after["inner"][1]},
+        "asked": wanted,
+        "own": own,
+        "window": {"width": after["outer"][0], "height": after["outer"][1]},
+        "screen": {"width": after["screen"][0], "height": after["screen"][1]},
+        "devicePixelRatio": after["dpr"],
+        "note": ("Only the content area changed. The user agent, screen, "
+                 "devicePixelRatio and touch are still this identity's desktop, "
+                 "and the window still reads maximized, so a page comparing "
+                 "outerWidth with innerWidth can see the resize. Restore with no "
+                 "size when the check is done. A page the site opens, or a "
+                 "reopen, starts at the own size."),
+    }
+    if [after["inner"][0], after["inner"][1]] != [wanted["width"], wanted["height"]]:
+        answer["warning"] = ("the page reads %dx%d, not the %dx%d asked for"
+                             % (after["inner"][0], after["inner"][1],
+                                wanted["width"], wanted["height"]))
+    return json.dumps(answer)
+
+
 # ── evaluate, and the one thing it must not be used for ─────────────────────
 #
 # ⛔ THIS PACKAGE EXISTS SO THAT INTERACTION LOOKS REAL, AND A VALUE SET FROM
