@@ -12,6 +12,9 @@ newest live one; that is the whole of it.
 from __future__ import annotations
 
 import asyncio
+from collections import deque
+import json
+import logging
 import time
 from typing import Any
 
@@ -45,6 +48,11 @@ class StealthSession:
         # removed when it closes: Firefox reads a picked file when the page
         # sends it, so they must last exactly as long as the browser does.
         self._kept: list[str] = []
+        self._dialog_arm: dict | None = None
+        self._dialogs: deque[dict] = deque(maxlen=20)
+        self._dialog_unreported: deque[dict] = deque(maxlen=20)
+        self._dialog_dropped = 0
+        self._dialog_tasks: set[asyncio.Task] = set()
 
     @property
     def seed(self):
@@ -69,6 +77,110 @@ class StealthSession:
     async def start(self) -> None:
         self._ipw = InvisiblePlaywright(**self._kwargs)
         await self._attach(await self._ipw.__aenter__())
+        self._context.on("dialog", self._on_dialog)
+
+    def arm_dialog(self, accept: bool, prompt_text: str | None, timeout_s: float) -> None:
+        if not 0 < timeout_s <= 600:
+            raise ValueError("refused: timeout_seconds must be > 0 and <= 600.")
+        if prompt_text is not None and not accept:
+            raise ValueError("refused: prompt_text requires accept=true.")
+        self._dialog_arm = {
+            "accept": accept, "prompt_text": prompt_text,
+            "expires": self._clock() + timeout_s,
+        }
+
+    def dialog_arm(self) -> dict | None:
+        if self._dialog_arm and self._dialog_arm["expires"] <= self._clock():
+            self._dialog_arm = None
+        return dict(self._dialog_arm) if self._dialog_arm is not None else None
+
+    def _queue_dialog(self, event: dict) -> None:
+        if len(self._dialog_unreported) == self._dialog_unreported.maxlen:
+            self._dialog_dropped += 1
+        self._dialog_unreported.append(event)
+
+    def _on_dialog(self, dialog) -> None:
+        arm = self.dialog_arm()
+        self._dialog_arm = None
+        accept = arm["accept"] if arm else dialog.type == "beforeunload"
+        prompt_text = arm["prompt_text"] if arm and accept and dialog.type == "prompt" else None
+        event = {
+            "type": dialog.type, "message": "", "url": "",
+            "action": "accepted" if accept else "dismissed",
+            "source": "armed" if arm else "default", "succeeded": None,
+        }
+        if prompt_text is not None:
+            event["prompt_text"] = prompt_text
+
+        async def answer():
+            try:
+                if accept:
+                    if prompt_text is None:
+                        await dialog.accept()
+                    else:
+                        await dialog.accept(prompt_text=prompt_text)
+                else:
+                    await dialog.dismiss()
+                event["succeeded"] = True
+            except Exception as exc:
+                event["succeeded"] = False
+                event["error"] = str(exc)[:500]
+                logging.getLogger(__name__).warning("dialog answer failed: %s", exc)
+            finally:
+                # A slow answer may have been reported as pending. Report its
+                # completion too, but never resurrect events after close.
+                if event.pop("_reported_pending", False) and any(
+                        held is event for held in self._dialogs):
+                    with swallow("recording a completed dialog must not fail its answer task"):
+                        self._queue_dialog(event)
+
+        # Schedule BEFORE reading metadata: even broken recording must not
+        # leave the content process blocked inside a native dialog.
+        task = asyncio.create_task(answer())
+        self._dialog_tasks.add(task)
+        task.add_done_callback(self._dialog_tasks.discard)
+        with swallow("dialog metadata must never prevent its native answer"):
+            self._dialogs.append(event)
+            self._queue_dialog(event)
+            event["message"] = dialog.message[:500]
+            if dialog.type == "prompt":
+                event["default_value"] = dialog.default_value[:500]
+        with swallow("a dialog's page may already be gone"):
+            event["url"] = dialog.page.url if dialog.page else ""
+
+    async def settle_dialogs(self) -> None:
+        # A ready dialog event can follow the action's own reply on the loop.
+        await asyncio.sleep(0)
+        if self._dialog_tasks:
+            await asyncio.wait(tuple(self._dialog_tasks), timeout=0.25)
+
+    def take_dialog_news(self) -> list[dict]:
+        events = list(self._dialog_unreported)
+        self._dialog_unreported.clear()
+        for event in events:
+            if event["succeeded"] is None:
+                event["_reported_pending"] = True
+        return events
+
+    def dialog_news(self, *, recent: bool = False) -> str:
+        events = self.take_dialog_news()
+        if recent:
+            events += [event for event in list(self._dialogs)[-5:]
+                       if not any(event is new for new in events)]
+        lines = []
+        if self._dialog_dropped:
+            lines.append("dialog: %d older unreported events dropped." % self._dialog_dropped)
+            self._dialog_dropped = 0
+        lines.extend(_describe_dialog(event) for event in events)
+        return "\n".join(lines)
+
+    def dialog_status(self) -> str:
+        arm = self.dialog_arm()
+        state = "dialog arm: none."
+        if arm:
+            state = "dialog arm: %s, %.1f seconds left." % (
+                "accept" if arm["accept"] else "dismiss", arm["expires"] - self._clock())
+        return "\n" + state + "\n" + self.dialog_news(recent=True)
 
     def is_usable(self) -> bool:
         """Whether this object is worth handing out, asked WITHOUT talking to
@@ -264,6 +376,14 @@ class StealthSession:
     # --- the end ----------------------------------------------------------------
 
     async def close(self) -> None:
+        self._dialog_arm = None
+        self._dialogs.clear()
+        self._dialog_unreported.clear()
+        self._dialog_dropped = 0
+        self._dialog_tasks.clear()
+        if self._context is not None:
+            with swallow("a context already gone may have dropped its dialog listener"):
+                self._context.remove_listener("dialog", self._on_dialog)
         for key in list(self._watch):
             await self._stop_watch(key)
         if self._context is not None:
@@ -285,3 +405,23 @@ class StealthSession:
         for path in self._kept:
             shutil.rmtree(path, ignore_errors=True)
         self._kept.clear()
+
+
+def _describe_dialog(event: dict) -> str:
+    where = " on " + " ".join(event["url"].split()) if event["url"] else ""
+    why = ("armed by browser_handle_dialog" if event["source"] == "armed"
+           else "default; nothing was armed")
+    outcome = event["action"]
+    if event["succeeded"] is False:
+        outcome = "answer failed (attempted %s): %s" % (
+            outcome, " ".join(event["error"].split()))
+    elif event["succeeded"] is None:
+        outcome = "answer pending (attempted %s)" % outcome
+    line = "dialog: %s %s%s - %s (%s)." % (
+        event["type"], json.dumps(event["message"]), where, outcome, why)
+    if "prompt_text" in event:
+        line += " prompt_text: %s." % json.dumps(event["prompt_text"])
+    if event["source"] == "default" and event["action"] == "dismissed":
+        line += (" To accept it, call browser_handle_dialog(accept=true) "
+                 "and repeat the action.")
+    return line

@@ -13,6 +13,7 @@ async def test_server_registers_expected_tools():
         # injecting script to set the value - which changes the page without
         # it ever seeing a real interaction.
         "browser_select_option",
+        "browser_handle_dialog",
         # Added in 0.15.0: the window as a person sees it, pointer included,
         # from the engine's screencast. It exists because every image the
         # server returned was the content viewport, and the pointer is drawn

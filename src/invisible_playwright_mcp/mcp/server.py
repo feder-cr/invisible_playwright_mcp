@@ -197,6 +197,10 @@ says the browser is gone, call browser_open again and carry on."""
 PAGE_RULES = """Drive the page the way a person would. Everything here goes
 through the real pointer and the real keyboard.
 
+Dialogs are never dismissed silently: to accept one, arm browser_handle_dialog
+then do the action. Image results leave dialog news for the next text result
+or browser_status.
+
 Try things in this order. It matters, because a page can tell the difference.
 
 1. A named tool with a selector: browser_click, browser_type,
@@ -621,6 +625,27 @@ async def browser_click(selector: str, browser: Browser = None) -> str:
     describe the target, use browser_click_at with coordinates from
     browser_snapshot."""
     return await work.acting(actions.click, selector, role=browser)
+
+
+@mcp.tool(annotations=_says("Answer the next dialog", destructive=True, open_world=False))
+async def browser_handle_dialog(accept: bool, prompt_text: str | None = None,
+                               timeout_seconds: float = 60,
+                               browser: Browser = None) -> str:
+    """Arm a native response for the NEXT alert, confirm, prompt or beforeunload
+    in this browser, then perform the action that opens it. One-shot; calling
+    again replaces the arm. timeout_seconds must be >0 and <=600 (default 60).
+    prompt_text requires accept=true and is used only for prompts. Unarmed
+    dialogs are dismissed and reported, except beforeunload is accepted.
+    Starts no browser. browser_status shows the arm and recent dialogs."""
+    async def arm(session):
+        session.arm_dialog(accept, prompt_text, timeout_seconds)
+        return ("Next dialog armed to %s%s; expires in %g seconds. "
+                "Perform the action before then." % (
+                    "accept" if accept else "dismiss",
+                    " with prompt_text=" + json.dumps(prompt_text) if prompt_text is not None else "",
+                    timeout_seconds))
+
+    return await work.acting(arm, role=browser)
 
 
 @mcp.tool(annotations=_says("Click at a point", destructive=True))

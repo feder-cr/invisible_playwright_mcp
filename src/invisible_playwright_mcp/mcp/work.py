@@ -530,6 +530,7 @@ class Work:
         news = self._typing_news(at)
         async with self._input_lock(at):
             answer = await self._act(at, fn, *args, **kwargs)
+            answer = await self._dialog_result(at, answer)
         return news + answer if news and isinstance(answer, str) else answer
 
     async def reading(self, fn: Callable[..., Awaitable], *args,
@@ -538,7 +539,23 @@ class Work:
         input: a snapshot, a read or a frame of the live pane is answered while
         a long text is still being typed, which is when somebody watching most
         wants to see the page."""
-        return await self._act(role or DEFAULT_BROWSER_ID, fn, *args, **kwargs)
+        at = role or DEFAULT_BROWSER_ID
+        answer = await self._act(at, fn, *args, **kwargs)
+        return await self._dialog_result(at, answer)
+
+    async def _dialog_result(self, at: str, answer):
+        session = self._open.get(at)
+        if not isinstance(session, StealthSession):
+            return answer
+        await session.settle_dialogs()
+        # FastMCP supports mixed content, but these tools promise Image and
+        # live-pane clients consume a single frame. Keep bytes/Image intact;
+        # retain news for the next string result or browser_status instead.
+        if isinstance(answer, str):
+            news = session.dialog_news()
+            if news:
+                return news + "\n" + answer
+        return answer
 
     async def typing(self, fn: Callable[..., Awaitable], selector: str, text: str,
                      role: Optional[str] = None) -> str:
@@ -581,15 +598,15 @@ class Work:
             self._typing[at] = rec
             raise
         if task in done:
-            return news + task.result()
+            return await self._dialog_result(at, news + task.result())
         rec.outlived = True
         self._typing[at] = rec
-        return news + (
+        return await self._dialog_result(at, news + (
             "still typing into %s: %d characters at this browser's typing pace "
             "take longer than one answer may wait, so the typing goes on after "
             "this answer. Until it is done, actions on the %s browser are "
             "refused with how far it has got; reads work as usual, and "
-            "browser_status says when it has finished." % (selector, len(text), at))
+            "browser_status says when it has finished." % (selector, len(text), at)))
 
     def _input_lock(self, at: str) -> asyncio.Lock:
         return self._input_locks.setdefault(at, asyncio.Lock())
@@ -729,6 +746,13 @@ class Work:
         on. Starts nothing; not open, or gone, is the sentence."""
         session = self.session(role)
         launched = self._launched[role]
+
+        async def dialogs():
+            if isinstance(session, StealthSession):
+                await session.settle_dialogs()
+                return session.dialog_status()
+            return ""
+
         try:
             rows = await session.describe_pages()
         except TargetClosedError:
@@ -743,7 +767,7 @@ class Work:
             # Any other failure is the page being difficult, not the browser
             # being gone: the identity is still worth reporting.
             return (plan.describe(launched) + " page: the page is unreadable."
-                    + self.typing_status(role))
+                    + self.typing_status(role) + await dialogs())
         here = next((r for r in rows if r["active"]), rows[0] if rows else None)
         where = (here["url"] or "blank") if here else "no page open yet"
         # ⛔ COUNTED, AND NOT BLAMED ON ANYBODY. A caller cannot make, choose
@@ -752,4 +776,4 @@ class Work:
         # project removed from `navigate`.
         if len(rows) > 1:
             where += " (%d other pages are open in this browser)" % (len(rows) - 1)
-        return plan.describe(launched) + " page: %s." % where + self.typing_status(role)
+        return plan.describe(launched) + " page: %s." % where + self.typing_status(role) + await dialogs()

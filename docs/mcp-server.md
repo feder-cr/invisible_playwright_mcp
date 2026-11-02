@@ -168,7 +168,7 @@ a browser gets when nobody says anything.
 `browser_navigate`, `browser_read_text`, `browser_snapshot`, `browser_read_html`,
 `browser_take_screenshot`, `browser_watch`, `browser_click`, `browser_click_at`,
 `browser_type`, `browser_select_option`, `browser_press_key`,
-`browser_upload_files`, `browser_evaluate`.
+`browser_upload_files`, `browser_evaluate`, `browser_handle_dialog`.
 
 Tool names mirror the Microsoft Playwright MCP, so prompts written for it work
 here too, with one deliberate departure: **there are no tab tools.** Three
@@ -329,6 +329,29 @@ which is also why no page screenshot can ever contain it. The picture is window
 pixels: feed `browser_take_screenshot` to `browser_click_at`, not this. It needs
 an engine from `firefox-28` on; an older engine answers with a sentence saying
 so.
+
+### Native dialogs
+
+`browser_handle_dialog(accept, prompt_text=null, timeout_seconds=60)` arms the
+**next** native alert, confirm, prompt or beforeunload in the selected browser,
+including dialogs from pages the site opens. It starts no browser. Call it
+before the action that opens the dialog; another call replaces the arm.
+Timeout must be greater than zero and at most 600 seconds. `prompt_text`
+requires `accept=true` and is passed only to prompts. `accept=false` dismisses.
+An expired or consumed arm leaves the default: dismiss, except beforeunload
+is accepted so navigation behavior stays unchanged.
+
+Dialogs are answered through the engine, not by replacing page JavaScript.
+Text results report the type, message, page, chosen action, armed/default
+decision and any failure. A default dismissal says to arm acceptance and
+repeat the action. **Image tools (`browser_click_at`, `browser_take_screenshot`,
+`browser_watch`) keep their single-image result** and retain news for the next
+text-returning tool or `browser_status`; they never discard it. Status also
+shows the current arm's action and seconds left, plus recent dialogs. History
+and unreported news each retain at most 20 events, with dropped news counted.
+A pending answer is reported as pending and its completion is reported later.
+Closing the browser clears its arm and history. Arms and news are separate
+for `main` and `support`.
 
 ### Acting on the page
 
