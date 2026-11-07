@@ -757,6 +757,34 @@ async def click_at(session, x: float, y: float, hold_seconds: float = 0.0) -> by
     return await page.screenshot()
 
 
+async def drag_path(session, strokes: list) -> bytes:
+    """Press, move through waypoints, and release — once per stroke.
+
+    Each stroke is a list of [x, y] viewport-coordinate pairs. The pointer
+    travels to the first point, presses, moves through the rest with the
+    engine's humanised cursor motion (which works with the button held), and
+    releases. Multiple strokes lift between each one — use this for signature
+    pads or multi-segment drags.
+    """
+    from .masked import guard_pixels
+
+    await guard_pixels(session)
+    page = session.page()
+    for stroke in strokes:
+        if len(stroke) < 2:
+            continue
+        await page.mouse.move(stroke[0][0], stroke[0][1])
+        await page.mouse.down()
+        try:
+            for point in stroke[1:]:
+                await page.mouse.move(point[0], point[1])
+        finally:
+            await page.mouse.up()
+        await page.wait_for_timeout(80)
+    await page.wait_for_timeout(400)
+    return await screenshot_png(session)
+
+
 #: What the page is asked about a field, before typing and after: what it holds,
 #: whether it still has the focus, and whether it is a secret. One read, so the
 #: three answers describe the same moment. `value` is None for anything that is
