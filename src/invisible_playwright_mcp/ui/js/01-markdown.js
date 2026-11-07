@@ -161,7 +161,8 @@ function rich(text){
 /* Raw tool names read as the machine's word order. One table, two tenses. */
 const VERB = {
   browser_navigate:['Navigating','Navigated'], browser_click:['Clicking','Clicked'],
-  browser_click_at:['Clicking','Clicked'],     browser_type:['Typing','Typed'],
+  browser_click_at:['Clicking','Clicked'],     browser_drag:['Drawing','Drew'],
+  browser_type:['Typing','Typed'],
   browser_press_key:['Pressing','Pressed'],    browser_read_text:['Reading','Read'],
   browser_read_html:['Reading','Read'],        browser_snapshot:['Inspecting','Inspected'],
   browser_evaluate:['Evaluating','Evaluated'], browser_take_screenshot:['Capturing','Captured'],

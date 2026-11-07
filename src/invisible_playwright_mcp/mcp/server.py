@@ -655,7 +655,7 @@ async def browser_drag(strokes: list[list[list[float]]],
     Each stroke is a list of [x, y] viewport-coordinate waypoints.
     The pointer travels to the first waypoint, presses, moves through
     the rest with human-like motion, and releases. Multiple strokes
-    lift between each — use this for signature pads or multi-segment
+    lift between each -- use this for signature pads or multi-segment
     drags.
 
     Coordinates come from browser_snapshot's `at: [x, y]` values or

@@ -758,12 +758,12 @@ async def click_at(session, x: float, y: float, hold_seconds: float = 0.0) -> by
 
 
 async def drag_path(session, strokes: list) -> bytes:
-    """Press, move through waypoints, and release — once per stroke.
+    """Press, move through waypoints, and release -- once per stroke.
 
     Each stroke is a list of [x, y] viewport-coordinate pairs. The pointer
     travels to the first point, presses, moves through the rest with the
     engine's humanised cursor motion (which works with the button held), and
-    releases. Multiple strokes lift between each one — use this for signature
+    releases. Multiple strokes lift between each one -- use this for signature
     pads or multi-segment drags.
     """
     from .masked import guard_pixels
