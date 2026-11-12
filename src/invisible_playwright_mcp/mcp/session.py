@@ -148,11 +148,20 @@ class StealthSession:
         with swallow("a dialog's page may already be gone"):
             event["url"] = dialog.page.url if dialog.page else ""
 
+    #: How long an action's reply waits for a dialog's native answer to land.
+    #: It was 0.25 s, and on a loaded CI runner (2026-11-12) dismiss() had not
+    #: returned by then: the click honestly said "answer pending" where the
+    #: e2e test, and a caller, wanted the outcome. The wait is spent only
+    #: while an answer is in flight, so a call that opened no dialog pays
+    #: nothing; an answer slower than this is still reported as pending and
+    #: its completion follows in the next text result.
+    DIALOG_SETTLE_S = 2.0
+
     async def settle_dialogs(self) -> None:
         # A ready dialog event can follow the action's own reply on the loop.
         await asyncio.sleep(0)
         if self._dialog_tasks:
-            await asyncio.wait(tuple(self._dialog_tasks), timeout=0.25)
+            await asyncio.wait(tuple(self._dialog_tasks), timeout=self.DIALOG_SETTLE_S)
 
     def take_dialog_news(self) -> list[dict]:
         events = list(self._dialog_unreported)

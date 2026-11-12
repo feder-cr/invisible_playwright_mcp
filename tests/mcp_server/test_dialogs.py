@@ -378,9 +378,10 @@ async def test_slow_answers_are_bounded_and_later_failure_is_not_lost(opened, mo
         return await wait(tasks, timeout=timeout)
 
     monkeypatch.setattr(session_module.asyncio, "wait", measured_wait)
+    monkeypatch.setattr(StealthSession, "DIALOG_SETTLE_S", 0.05)
     async with asyncio.timeout(1):
         said = await server.browser_click("#go")
-    assert timeouts == [0.25]
+    assert timeouts == [0.05]
     assert "answer pending" in said
     assert session._dialog_tasks
     gate.set()
