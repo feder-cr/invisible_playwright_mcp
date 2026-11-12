@@ -727,13 +727,12 @@ async def browser_evaluate(expression: str, browser: Browser = None,
     Assigning to `value`, `checked` or `selected`, or calling `click()`,
     `dispatchEvent()`, `submit()` or `requestSubmit()`, changes the page without
     a real keystroke or pointer, and a page can tell. Use browser_click,
-    browser_type or browser_select_option instead; they do the same thing
-    through the pointer and the keyboard. Reading any of those properties is
-    fine.
+    browser_type or browser_select_option instead. Reading any of those
+    properties is fine.
 
     The refusal catches the obvious spellings, not every possible one. A script
     that slips past it is still the wrong way to do the thing: report it in your
-    answer rather than using it. frame: run in an iframe (the snapshot's)."""
+    answer rather than using it. Inside an iframe, pass the snapshot's `frame`."""
     # ⛔ AN ARBITRARY SCRIPT IS NOT A READ, SO IT QUEUES LIKE AN ACTION. It went
     # through `work.reading`, which does not wait for the input lock: during a
     # background typing a script calling `focus()` on another field moved the
