@@ -45,6 +45,10 @@ class StealthSession:
         # removed when it closes: Firefox reads a picked file when the page
         # sends it, so they must last exactly as long as the browser does.
         self._kept: list[str] = []
+        # The identity's own content-area size, remembered by
+        # `actions.set_viewport` the first time it changes it, so a call with
+        # no size can put it back.
+        self.own_viewport: dict | None = None
 
     @property
     def seed(self):

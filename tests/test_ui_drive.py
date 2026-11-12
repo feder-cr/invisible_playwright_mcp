@@ -266,6 +266,7 @@ EXPECTED_TOOLS = {
     "browser_watch",
     "browser_click", "browser_click_at", "browser_type", "browser_press_key",
     "browser_evaluate", "browser_select_option", "browser_upload_files",
+    "browser_set_viewport",
 }
 
 

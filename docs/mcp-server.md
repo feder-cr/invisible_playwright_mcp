@@ -168,7 +168,7 @@ a browser gets when nobody says anything.
 `browser_navigate`, `browser_read_text`, `browser_snapshot`, `browser_read_html`,
 `browser_take_screenshot`, `browser_watch`, `browser_click`, `browser_click_at`,
 `browser_type`, `browser_select_option`, `browser_press_key`,
-`browser_upload_files`, `browser_evaluate`.
+`browser_upload_files`, `browser_evaluate`, `browser_set_viewport`.
 
 Tool names mirror the Microsoft Playwright MCP, so prompts written for it work
 here too, with one deliberate departure: **there are no tab tools.** Three
@@ -340,6 +340,7 @@ so.
 | `browser_select_option` | `selector`, `value` | Chooses an option in a `<select>`, by its visible label or by its value. |
 | `browser_upload_files` | `selector`, `paths` | Attaches local files to a file input the way a person picks them: the input, or the button or label that opens its chooser, is clicked with the real pointer and the chooser is answered with `paths`. A hidden input is opened by clicking its label, and one with no label is refused with a request for the button that opens it: a hidden input is never fed files no click opened. The chooser is answered after the time a person takes to pick a file. Off unless `INVISIBLE_MCP_UPLOAD_DIRS` names the directories files may come from (absolute, separated by `:`, `;` on Windows); a path must be a regular file inside one of them, under no hidden directory, at most 50 MB, and on Windows never an alternate data stream (`a.pdf:Zone.Identifier`). The private copies sent to the browser are removed when it closes. |
 | `browser_press_key` | `key` | Presses a key on whatever has focus: `Enter`, `Tab`, `Escape`, `ArrowDown`, `Control+a`, or a single character. |
+| `browser_set_viewport` | `width`, `height` (both or neither) | Resizes the page's content area to that many CSS pixels, for responsive checks; neither restores the browser's own size. Answers JSON with the size the page now reads, the window and the screen. Larger than the browser's own screen is refused. See [resizing the page](#resizing-the-page). |
 | `browser_evaluate` | `expression` | Runs JavaScript to **read** from the page and returns the result as JSON: a computed style, a value held in a framework's state, the length of a list. |
 
 `browser_click_at` takes coordinates relative to the **viewport**, not to the
@@ -357,6 +358,36 @@ Script reaches the page with no keystroke and no pointer, so the event carries
 is really there. Reading those properties is fine. The refusal catches the
 obvious spellings, not every possible one; a script that slips past it is still
 the wrong way to do the thing.
+
+### Resizing the page
+
+`browser_set_viewport(width, height)` sets the content area the page lays out
+in, so a responsive check sees what a 1440, 1024 or 390-pixel-wide window
+shows: CSS width breakpoints, `innerWidth`, `matchMedia('(max-width: ...)')`.
+With neither argument it puts back the size the browser opened with,
+remembered the first time it is changed.
+
+It is not phone emulation. The user agent, `devicePixelRatio`, `screen.*`,
+touch support and `(pointer: fine)` stay the identity's desktop: a
+phone-sized viewport with a phone's screen and touch but a desktop's user
+agent, GPU and fonts is a combination nobody produces, so the tool does not
+offer one. Sites that switch layouts on the user agent or on touch, not on
+width, still serve their desktop layout.
+
+**The fingerprint trade-off.** The engine declares every window maximized and
+answers `outerWidth`/`outerHeight` from the screen and the measured Windows
+frame, not from the content area, so the window does not follow the resize.
+Measured on 2026-11-01 with a 1920x1080 identity: inner 1920x947 in an outer
+1936x1048 before, inner 390x844 in the same outer 1936x1048 after. Retail
+Firefox maximized answers `outerWidth - innerWidth = 16`, so a page that
+compares the two can see a window no real Firefox shows (DevTools' responsive
+design mode is the nearest real case). Making the window follow needs the
+engine to answer a non-maximized frame, which is an engine change, not one
+this server can make. Use it for responsive checks, and restore with no
+arguments when done. A size larger than the browser's own screen is refused.
+
+The size applies to the page the browser is driving. A page the site opens,
+and a reopened browser, start at the browser's own size.
 
 ### The order to try them in
 
