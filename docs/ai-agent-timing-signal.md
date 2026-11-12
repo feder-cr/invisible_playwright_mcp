@@ -51,14 +51,14 @@ A fingerprint is a photograph; behaviour is a motion study. Making the photograp
 perfect does nothing to the motion study.
 
 invisible_playwright_mcp runs on a Firefox patched at the C++ level (the
-[invisible_playwright](https://github.com/feder-cr/invisible_playwright) engine), and
+[invisible_playwright](https://github.com/oss-invisible/playwright) engine), and
 that engine's job is the photograph: the rendering, the driver surface and the network
 handshake read as a genuine Firefox rather than an automated build. That is real, and
 it is most of what agents are blocked for. It is also not everything, and the honest
 boundary matters: the engine controls what the browser *is*, not the cadence at which
 the loop above it decides to act. The cadence is produced by the model and the
 harness calling it, above the browser, out of the engine's reach. The engine wiki's
-[testing method](https://github.com/feder-cr/invisible_playwright/wiki/how-to-test-bot-detection)
+[testing method](https://github.com/oss-invisible/playwright/wiki/how-to-test-bot-detection)
 lists behaviour among the things no in-page test suite covers, for the same reason.
 
 ## What the layer under invisible_playwright_mcp already covers
@@ -71,7 +71,7 @@ so you should know which part it is before trying to fix it yourself.
   click's motion is covered; the gap before the click is not, because the loop decides
   when the click happens. The boundary between pointer realism and fingerprint realism
   is drawn in detail on
-  [the engine wiki](https://github.com/feder-cr/invisible_playwright/wiki/ghost-cursor-human-mouse).
+  [the engine wiki](https://github.com/oss-invisible/playwright/wiki/ghost-cursor-human-mouse).
 - **Real input, not script shortcuts.** invisible_playwright_mcp drives the page the way a person would:
   the pointer moves and keys are pressed, and it refuses to set a form field from
   JavaScript even when that would be quicker, because a page can tell the difference.
@@ -168,13 +168,13 @@ layers.
 
 - invisible_playwright_mcp's own source: the system prompt in `src/invisible_playwright_mcp/agent.py` instructs the model
   to inspect pages before acting and to prefer one clear action at a time, and the
-  [README](https://github.com/feder-cr/invisible_playwright_mcp#readme) documents the input behaviour
+  [README](https://github.com/oss-invisible/playwright_mcp#readme) documents the input behaviour
   (pointer moves, keys pressed, JavaScript form-fill refused). Both read 2026-09-03.
 - The engine wiki's
-  [testing method](https://github.com/feder-cr/invisible_playwright/wiki/how-to-test-bot-detection),
+  [testing method](https://github.com/oss-invisible/playwright/wiki/how-to-test-bot-detection),
   which lists behaviour and the model-latency-shaped pause among the things no
   in-page suite covers, and its
-  [detected-on-one-site checklist](https://github.com/feder-cr/invisible_playwright/wiki/playwright-detected-as-bot),
+  [detected-on-one-site checklist](https://github.com/oss-invisible/playwright/wiki/playwright-detected-as-bot),
   which reaches pointer motion and cadence only after the browser itself is clean.
 
 **See also:** [why does my AI agent get blocked?](why-does-my-ai-agent-get-blocked.md)
@@ -185,7 +185,7 @@ the rhythm of a screenshot-driven agent specifically.
 
 ---
 
-*Written while maintaining [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), an AI agent
+*Written while maintaining [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp), an AI agent
 on a Firefox patched at the C++ level. The engine makes the browser real; the rhythm
 comes from the loop, and this page is what I check first when a session of my own
 gets challenged after the third click.*

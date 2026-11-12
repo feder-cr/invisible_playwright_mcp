@@ -152,12 +152,12 @@ generally on
 
 Retrieved 2026-09-05.
 
-- [invisible_playwright_mcp README](https://github.com/feder-cr/invisible_playwright_mcp#readme), for the
+- [invisible_playwright_mcp README](https://github.com/oss-invisible/playwright_mcp#readme), for the
   `uvx invisible-playwright-mcp ui` interface and the MCP path for assistants that can already
   run tools.
 
 ---
 
-*From the [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) wiki. The agent reads
+*From the [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) wiki. The agent reads
 the public page; deciding who to email, and what to promise them, is still
 yours.*

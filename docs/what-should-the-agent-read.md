@@ -114,7 +114,7 @@ There is a separate question with a similar shape, and mixing them up leads to
 the wrong fix: whether an agent that reads the DOM and an agent that clicks
 pixels are *detected* differently. That is a question about what a site can see,
 not about what your context costs, and it has its own answer in
-[DOM-reading vs screenshot agents](https://github.com/feder-cr/invisible_playwright/wiki/dom-reading-vs-screenshot-agents).
+[DOM-reading vs screenshot agents](https://github.com/oss-invisible/playwright/wiki/dom-reading-vs-screenshot-agents).
 This page is only about the bill.
 
 ## Short answers to the questions that lead here

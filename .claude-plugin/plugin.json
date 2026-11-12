@@ -7,8 +7,8 @@
     "name": "feder-cr",
     "url": "https://github.com/feder-cr"
   },
-  "homepage": "https://github.com/feder-cr/invisible_playwright_mcp/wiki/mcp-server",
-  "repository": "https://github.com/feder-cr/invisible_playwright_mcp",
+  "homepage": "https://github.com/oss-invisible/playwright_mcp/wiki/mcp-server",
+  "repository": "https://github.com/oss-invisible/playwright_mcp",
   "license": "MIT",
   "keywords": ["browser", "browser-agent", "web-automation", "playwright", "firefox", "computer-use"]
 }

@@ -44,7 +44,7 @@ tokens every tick, because a model is still doing the deciding.
 between runs never change, same URL, same element, same field to read, write them
 once against the library the engine ships as, instead of paying a model to redo the
 same actions every time. The engine wiki has a page for exactly this route:
-[scheduling invisible_playwright scrapes with cron](https://github.com/feder-cr/invisible_playwright/wiki/schedule-invisible-playwright-scrapes-with-cron).
+[scheduling invisible_playwright scrapes with cron](https://github.com/oss-invisible/playwright/wiki/schedule-invisible-playwright-scrapes-with-cron).
 
 ```python
 from invisible_playwright import InvisiblePlaywright
@@ -146,13 +146,13 @@ invented just for this.
 
 Retrieved 2026-09-05.
 
-- [feder-cr/invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), this repo's README and
+- [oss-invisible/playwright_mcp](https://github.com/oss-invisible/playwright_mcp), this repo's README and
   `src/invisible_playwright_mcp/cli.py`: the `ui` subcommand, its OpenRouter-key requirement, its
   run-until-interrupted server loop, and the `uvx invisible-playwright fetch`
   prefetch command.
 
 ---
 
-*From the [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) wiki. Built for a person
+*From the [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) wiki. Built for a person
 watching a live pane, this interface is the opposite of a cron job; the two routes
 here fill that gap.*

@@ -1,11 +1,11 @@
 <div align="center">
 <picture>
-  <source media="(max-width: 374px) and (prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/feder-cr/invisible_playwright_mcp/main/assets/banner-small-dark.gif">
-  <source media="(max-width: 374px)" srcset="https://raw.githubusercontent.com/feder-cr/invisible_playwright_mcp/main/assets/banner-small-light.gif">
-  <source media="(max-width: 1239px) and (prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/feder-cr/invisible_playwright_mcp/main/assets/banner-phone-dark.gif">
-  <source media="(max-width: 1239px)" srcset="https://raw.githubusercontent.com/feder-cr/invisible_playwright_mcp/main/assets/banner-phone-light.gif">
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/feder-cr/invisible_playwright_mcp/main/assets/banner-dark.gif">
-  <img alt="invisible_playwright_mcp, a browser agent anti-bots cannot see. An animation: asked in Claude Code for the cheapest fare on five dates, it opens its Firefox, clicks each day, reads every fare and answers; or it runs on its own with a web UI." src="https://raw.githubusercontent.com/feder-cr/invisible_playwright_mcp/main/assets/banner-light.gif" width="100%">
+  <source media="(max-width: 374px) and (prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/oss-invisible/playwright_mcp/main/assets/banner-small-dark.gif">
+  <source media="(max-width: 374px)" srcset="https://raw.githubusercontent.com/oss-invisible/playwright_mcp/main/assets/banner-small-light.gif">
+  <source media="(max-width: 1239px) and (prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/oss-invisible/playwright_mcp/main/assets/banner-phone-dark.gif">
+  <source media="(max-width: 1239px)" srcset="https://raw.githubusercontent.com/oss-invisible/playwright_mcp/main/assets/banner-phone-light.gif">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/oss-invisible/playwright_mcp/main/assets/banner-dark.gif">
+  <img alt="invisible_playwright_mcp, a browser agent anti-bots cannot see. An animation: asked in Claude Code for the cheapest fare on five dates, it opens its Firefox, clicks each day, reads every fare and answers; or it runs on its own with a web UI." src="https://raw.githubusercontent.com/oss-invisible/playwright_mcp/main/assets/banner-light.gif" width="100%">
 </picture>
 <h3 align="center">Other AI browser agents get captchas.<br>
 This one is invisible to anti-bots.</h3>
@@ -36,21 +36,21 @@ Then install it in your assistant.
 **Claude Code:**
 
 ```bash
-claude plugin marketplace add feder-cr/invisible_playwright_mcp
-claude plugin install invisible-playwright-mcp@feder-cr
+claude plugin marketplace add oss-invisible/playwright_mcp
+claude plugin install invisible-playwright-mcp@oss-invisible
 ```
 
 **Codex:**
 
 ```bash
-codex plugin marketplace add feder-cr/invisible_playwright_mcp
-codex plugin add invisible-playwright-mcp@feder-cr
+codex plugin marketplace add oss-invisible/playwright_mcp
+codex plugin add invisible-playwright-mcp@oss-invisible
 ```
 
 **Gemini CLI:**
 
 ```bash
-gemini extensions install https://github.com/feder-cr/invisible_playwright_mcp
+gemini extensions install https://github.com/oss-invisible/playwright_mcp
 ```
 
 ### 2. Standalone: the web UI
@@ -130,25 +130,25 @@ both.
 ## The wiki: AI browser-agent guides
 
 The reading room around the agent lives in the
-[wiki](https://github.com/feder-cr/invisible_playwright_mcp/wiki): the
+[wiki](https://github.com/oss-invisible/playwright_mcp/wiki): the
 [AI browser-agent landscape: browser-use, Operator-style and
-computer-use agents compared](https://github.com/feder-cr/invisible_playwright_mcp/wiki/guides-alternatives-and-comparisons),
-[what to check when an agent gets blocked](https://github.com/feder-cr/invisible_playwright_mcp/wiki/why-does-my-ai-agent-get-blocked),
-and [what happened to OpenAI Operator](https://github.com/feder-cr/invisible_playwright_mcp/wiki/is-openai-operator-still-available),
+computer-use agents compared](https://github.com/oss-invisible/playwright_mcp/wiki/guides-alternatives-and-comparisons),
+[what to check when an agent gets blocked](https://github.com/oss-invisible/playwright_mcp/wiki/why-does-my-ai-agent-get-blocked),
+and [what happened to OpenAI Operator](https://github.com/oss-invisible/playwright_mcp/wiki/is-openai-operator-still-available),
 among others. Worked examples, transcripts and their outputs live in
-[articles/](https://github.com/feder-cr/invisible_playwright_mcp/tree/main/articles).
+[articles/](https://github.com/oss-invisible/playwright_mcp/tree/main/articles).
 
 ## The rest of the family: engine, core
 
 The MCP server from option 1 ships inside this package: `invisible_playwright_mcp` with no
 subcommand is the server, `invisible-playwright-mcp ui` the interface. Its config blocks for
 clients that take a file, its settings and its tools are on the wiki page
-[The MCP server](https://github.com/feder-cr/invisible_playwright_mcp/wiki/mcp-server).
+[The MCP server](https://github.com/oss-invisible/playwright_mcp/wiki/mcp-server).
 
-- **[invisible_playwright](https://github.com/feder-cr/invisible_playwright)**
+- **[invisible_playwright](https://github.com/oss-invisible/playwright)**
   The engine, as a Python library, for writing code instead of prompts. The API
   is Playwright's.
-- **[invisible_core](https://github.com/feder-cr/invisible_core)**
+- **[invisible_core](https://github.com/oss-invisible/core)**
   Seed to fingerprint to preferences, proxy and geolocation.
 
 ## Using it responsibly
@@ -177,15 +177,15 @@ Nothing else is collected and nothing is sent to the author. Sessions,
 profiles and screenshots are stored locally, under `INVISIBLE_MCP_HOME` if set and
 otherwise in the application-data directory of your system, and are yours to
 delete; nothing is retained anywhere else. Questions go to the
-[issues](https://github.com/feder-cr/invisible_playwright_mcp/issues).
+[issues](https://github.com/oss-invisible/playwright_mcp/issues).
 
 ## License
 
-[MIT](https://github.com/feder-cr/invisible_playwright_mcp/blob/main/LICENSE). Everything
+[MIT](https://github.com/oss-invisible/playwright_mcp/blob/main/LICENSE). Everything
 distributed before 2 September 2026 was released under AGPL-3.0 and stays under
 it.
 
 <!-- The Official MCP Registry verifies ownership of a PyPI package by finding
      this token in the published description, which is this file. It must match
      the `name` in server.json exactly. -->
-<!-- mcp-name: io.github.feder-cr/invisible-playwright-mcp -->
+<!-- mcp-name: io.github.oss-invisible/invisible-playwright-mcp -->

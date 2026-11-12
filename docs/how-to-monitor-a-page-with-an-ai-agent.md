@@ -35,7 +35,7 @@ self-hostable, diffs pages on a schedule you set, and notifies over the usual
 channels. It does per-check what an agent cannot: run constantly, for free,
 without a model in the loop. One disclosure belongs next to that
 recommendation: this project's maintainer also publishes a
-[changedetection.io fetcher plugin](https://github.com/feder-cr/invisible_playwright-changedetectionio)
+[changedetection.io fetcher plugin](https://github.com/oss-invisible/playwright-changedetectionio)
 that puts this same browser engine behind it, so the advice to use
 changedetection.io is not disinterested - it is still the right advice for
 mechanical checks, which is why it leads this section.
@@ -217,11 +217,11 @@ All retrieved 2026-09-03.
 - [dgtlmoon/changedetection.io](https://github.com/dgtlmoon/changedetection.io),
   the self-hosted diff-based monitor referenced as the plain-tool baseline,
   including its scheduling and notification features.
-- [feder-cr/invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), plus its README and
+- [oss-invisible/playwright_mcp](https://github.com/oss-invisible/playwright_mcp), plus its README and
   source in this repository: the interface entrypoint and the
   open-run-close session behavior in
-  [`src/invisible_playwright_mcp/runner.py`](https://github.com/feder-cr/invisible_playwright_mcp/blob/main/src/invisible_playwright_mcp/runner.py).
-- [invisible_playwright](https://github.com/feder-cr/invisible_playwright),
+  [`src/invisible_playwright_mcp/runner.py`](https://github.com/oss-invisible/playwright_mcp/blob/main/src/invisible_playwright_mcp/runner.py).
+- [invisible_playwright](https://github.com/oss-invisible/playwright),
   the engine as a Python library, whose Playwright API the scheduled script
   uses; the script above was executed against books.toscrape.com on
   2026-09-03 and printed the line quoted.
@@ -234,6 +234,6 @@ per-check cost down.
 
 ---
 
-*From the [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) wiki. The maintainer runs
+*From the [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) wiki. The maintainer runs
 the two-stage version: a free diff watching always, the agent woken only to
 answer "does this matter", which is the only question worth paying it for.*

@@ -110,7 +110,7 @@ a datacenter address.
 ## Sources
 
 - [microsoft/playwright-mcp](https://github.com/microsoft/playwright-mcp), retrieved 2026-09-10, for the snapshot model and the isolation options.
-- The engine wiki's [how to test bot detection](https://github.com/feder-cr/invisible_playwright/wiki/how-to-test-bot-detection) for running the comparison yourself.
+- The engine wiki's [how to test bot detection](https://github.com/oss-invisible/playwright/wiki/how-to-test-bot-detection) for running the comparison yourself.
 
 ---
 

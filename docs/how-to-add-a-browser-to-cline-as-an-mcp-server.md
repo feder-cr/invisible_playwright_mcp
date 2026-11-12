@@ -175,7 +175,7 @@ All retrieved 2026-09-03.
   transport picture.
 - [The MCP server page](mcp-server.md), for the config block, the tool list, the environment
   variables and the engine-download behavior.
-- [feder-cr/invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), plus its README in
+- [oss-invisible/playwright_mcp](https://github.com/oss-invisible/playwright_mcp), plus its README in
   this repository, for the platform boundary and the shared engine cache.
 
 **See also:** [running invisible_playwright_mcp with Claude Code](how-to-use-a-playwright-mcp-server-with-claude-code.md),
@@ -185,6 +185,6 @@ All retrieved 2026-09-03.
 
 ---
 
-*From the [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) wiki. Fourth client,
+*From the [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) wiki. Fourth client,
 same block, same README: the config canon lives in one place on purpose, and
 this page is the tour around it, not a copy of it.*

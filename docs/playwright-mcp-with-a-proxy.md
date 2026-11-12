@@ -39,7 +39,7 @@ design, and a local resolver in front of either undoes both.
 **WebRTC.** The classic one. A page can ask the browser to enumerate candidate
 addresses, and unless the browser is configured otherwise it will happily report
 the machine's real ones. The engine wiki has the mechanism and the test:
-[WebRTC leaks with a proxy](https://github.com/feder-cr/invisible_playwright/wiki/webrtc-leak-proxy).
+[WebRTC leaks with a proxy](https://github.com/oss-invisible/playwright/wiki/webrtc-leak-proxy).
 
 **Timezone and locale.** The one people forget, and the one that is trivially
 checkable from JavaScript. If the exit says Frankfurt and
@@ -49,7 +49,7 @@ that you are self-reporting a mismatch.
 
 None of these is exotic. All three are readable in a few lines from a page, and
 the engine wiki documents
-[how to check whether a proxy leaks your real IP](https://github.com/feder-cr/invisible_playwright/wiki/how-to-check-proxy-ip-leak)
+[how to check whether a proxy leaks your real IP](https://github.com/oss-invisible/playwright/wiki/how-to-check-proxy-ip-leak)
 so you can test rather than assume.
 
 ## Choosing what to route through
@@ -71,7 +71,7 @@ sessions, not inside one.
 
 ## In this project
 
-[invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp)'s server takes the proxy in two
+[invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp)'s server takes the proxy in two
 places rather than one. `STEALTHFOX_PROXY` in the config block that registers
 the server is the default exit for everything it opens. `browser_open` also
 takes a `proxy` argument, so the exit is changeable mid-conversation without
@@ -118,7 +118,7 @@ are pacing.
 ## Sources
 
 - [microsoft/playwright-mcp](https://github.com/microsoft/playwright-mcp), retrieved 2026-09-10, for `--proxy-server` and `--proxy-bypass`.
-- The engine wiki's own measurements on [WebRTC leaks](https://github.com/feder-cr/invisible_playwright/wiki/webrtc-leak-proxy) and [checking for IP leaks](https://github.com/feder-cr/invisible_playwright/wiki/how-to-check-proxy-ip-leak).
+- The engine wiki's own measurements on [WebRTC leaks](https://github.com/oss-invisible/playwright/wiki/webrtc-leak-proxy) and [checking for IP leaks](https://github.com/oss-invisible/playwright/wiki/how-to-check-proxy-ip-leak).
 
 ---
 

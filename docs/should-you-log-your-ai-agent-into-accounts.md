@@ -152,7 +152,7 @@ choices instead.
 
 All retrieved 2026-09-05 unless noted.
 
-- [feder-cr/invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), this repository's
+- [oss-invisible/playwright_mcp](https://github.com/oss-invisible/playwright_mcp), this repository's
   README, for the `--profile-dir` option and the "Using it responsibly"
   section, read in the working tree 2026-09-05.
 - OWASP GenAI Security Project, "LLM01:2025 Prompt Injection",
@@ -163,6 +163,6 @@ All retrieved 2026-09-05 unless noted.
 
 ---
 
-*From the [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) wiki. The mitigations
+*From the [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) wiki. The mitigations
 above match the project's own README: read the terms, respect rate limits,
 and do not submit anything a human has not read.*

@@ -96,7 +96,7 @@ they ship. That is the node the agent hangs off.
 
 ## One sentence on where we stand
 
-This wiki maintains [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), a
+This wiki maintains [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp), a
 browser agent, so take the case for the no-connector path above with that
 in mind.
 
@@ -146,6 +146,6 @@ faster than a wiki page does.
 
 ---
 
-*From the [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) wiki. invisible_playwright_mcp is a
+*From the [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) wiki. invisible_playwright_mcp is a
 browser agent, and this page's first real section tells you to use a
 no-code platform instead when a connector exists.*

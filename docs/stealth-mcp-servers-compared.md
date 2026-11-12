@@ -34,7 +34,7 @@ It is the smallest change of the three and the easiest to adopt, because your
 existing code keeps working.
 
 **This project's engine** is
-[invisible-playwright](https://github.com/feder-cr/invisible_playwright), a
+[invisible-playwright](https://github.com/oss-invisible/playwright), a
 Firefox patched at the C++ source with the identity derived from a seed, so two
 runs with the same seed present the same browser.
 
@@ -75,7 +75,7 @@ longer answer, and it is the same answer we would give about anyone's tool.
 If you are evaluating any server in this category, the useful test is not
 reading claims. It is running the same page through two of them from the same
 IP, and this wiki's engine documents
-[how to test that yourself](https://github.com/feder-cr/invisible_playwright/wiki/how-to-test-bot-detection).
+[how to test that yourself](https://github.com/oss-invisible/playwright/wiki/how-to-test-bot-detection).
 
 ## Choosing
 
@@ -128,7 +128,7 @@ to the others first, which is the cheaper question to answer.
 - [Stealth browsers 2026: nodriver, Camoufox, Patchright](https://proxycove.com/en/blog/stealth-browsers-2026-nodriver-camoufox-patchright-benchmark), retrieved 2026-09-10, for star counts and last-push dates as of August 2026.
 - [RobithYusuf/mcp-camoufox](https://github.com/RobithYusuf/mcp-camoufox) and [RobithYusuf/mcp-stealth-chrome](https://github.com/robithyusuf/mcp-stealth-chrome), retrieved 2026-09-10, for the wrappers and their own claims.
 - [patchright-mcp-lite](https://glama.ai/mcp/servers/dylangroos/patchright-mcp-lite), retrieved 2026-09-10.
-- [invisible-playwright](https://github.com/feder-cr/invisible_playwright), this project's engine.
+- [invisible-playwright](https://github.com/oss-invisible/playwright), this project's engine.
 
 ---
 

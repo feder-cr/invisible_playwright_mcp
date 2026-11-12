@@ -93,8 +93,8 @@ model bill; your suite is hundreds of assertions before the coffee cools.
 The two are not rivals; they are a feeder pattern. The agent explores and
 finds; what it finds worth protecting, you pin down as a scripted test. For
 that half, invisible_playwright_mcp's own engine is a library with Playwright's API -
-[invisible_playwright](https://github.com/feder-cr/invisible_playwright) -
-and its [wiki](https://github.com/feder-cr/invisible_playwright/wiki) covers
+[invisible_playwright](https://github.com/oss-invisible/playwright) -
+and its [wiki](https://github.com/oss-invisible/playwright/wiki) covers
 scripted browser automation in a depth this page does not attempt. Realistic
 browser behavior in scripted tests matters more than people expect, because
 users do not send synthetic events.
@@ -161,11 +161,11 @@ input and synthetic events.
 
 All retrieved 2026-09-03.
 
-- [feder-cr/invisible_playwright](https://github.com/feder-cr/invisible_playwright)
-  and its [wiki](https://github.com/feder-cr/invisible_playwright/wiki), the
+- [oss-invisible/playwright](https://github.com/oss-invisible/playwright)
+  and its [wiki](https://github.com/oss-invisible/playwright/wiki), the
   Playwright-API engine and its scripted-automation reference, linked for the
   regression-suite half of the pattern.
-- [feder-cr/invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), plus its README and
+- [oss-invisible/playwright_mcp](https://github.com/oss-invisible/playwright_mcp), plus its README and
   source in this repository, for the real-input-events behavior, `--headed`,
   `--seed`, `--profile-dir`, and the agent loop the flakiness section
   describes.
@@ -177,6 +177,6 @@ All retrieved 2026-09-03.
 
 ---
 
-*From the [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) wiki. The most useful
+*From the [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) wiki. The most useful
 bug report the maintainer ever got from the agent was three words about a
 form nobody had touched in months: "Continue does nothing."*

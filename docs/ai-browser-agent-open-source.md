@@ -196,7 +196,7 @@ repository page on that date.
 - [nanobrowser/nanobrowser](https://github.com/nanobrowser/nanobrowser)
 - [browseros-ai/BrowserOS](https://github.com/browseros-ai/BrowserOS)
 - [nottelabs/notte](https://github.com/nottelabs/notte), for the near-miss note.
-- [feder-cr/invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), plus its README in this
+- [oss-invisible/playwright_mcp](https://github.com/oss-invisible/playwright_mcp), plus its README in this
   repository.
 
 **See also:** [open-source computer-use agents](computer-use-agent-open-source.md),
@@ -209,7 +209,7 @@ frames the overlapping repos by what Operator specifically did.
 
 ---
 
-*This page is part of the [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) wiki. invisible_playwright_mcp
+*This page is part of the [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) wiki. invisible_playwright_mcp
 is the entry above with the patched Firefox underneath; the other five projects were
 described from their own repositories, and where one of them fits your case better,
 the table says so.*

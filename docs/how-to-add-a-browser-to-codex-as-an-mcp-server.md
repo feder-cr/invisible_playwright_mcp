@@ -32,8 +32,8 @@ engine build for it was `firefox-20` - and [uv](https://docs.astral.sh/uv/),
 because the plugin runs the server with `uvx`. Then, once:
 
 ```bash
-codex plugin marketplace add feder-cr/invisible_playwright_mcp
-codex plugin add invisible-playwright-mcp@feder-cr
+codex plugin marketplace add oss-invisible/playwright_mcp
+codex plugin add invisible-playwright-mcp@oss-invisible
 ```
 
 The first line registers the invisible_playwright_mcp repository as a plugin marketplace, which
@@ -118,7 +118,7 @@ results, and short steps keep its context small and its mistakes cheap.
 
 - **`invisible_playwright_mcp` is not in `codex mcp list`.** Run `codex plugin list` to see
   whether the plugin is installed and enabled, and whether the marketplace
-  `feder-cr` is registered. If `uvx` is not on your PATH, the plugin can be
+  `oss-invisible` is registered. If `uvx` is not on your PATH, the plugin can be
   installed and its server still fail to start - install uv and try
   `uvx invisible-playwright-mcp` by hand, which surfaces the real error.
 - **The first browsing prompt answers "the engine is downloading".** That is
@@ -137,8 +137,8 @@ results, and short steps keep its context small and its mistakes cheap.
 ## Short answers to the questions that lead here
 
 **How do I add invisible_playwright_mcp's browser to Codex?**
-`codex plugin marketplace add feder-cr/invisible_playwright_mcp`, then
-`codex plugin add invisible-playwright-mcp@feder-cr`, once, with uv installed. New sessions
+`codex plugin marketplace add oss-invisible/playwright_mcp`, then
+`codex plugin add invisible-playwright-mcp@oss-invisible`, once, with uv installed. New sessions
 then have the browser tools.
 
 **Do I need an OpenRouter key for this?** No. The key is only for invisible_playwright_mcp's own
@@ -165,7 +165,7 @@ your machine, where the browser is.
 
 All retrieved 2026-09-22.
 
-- [feder-cr/invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), this repository's
+- [oss-invisible/playwright_mcp](https://github.com/oss-invisible/playwright_mcp), this repository's
   README (the verbatim install commands, the prerequisites and platforms, the
   engine download), its `.codex-plugin/` and `.agents/plugins/` (the plugin
   manifest and the marketplace file the first command registers) and source:
@@ -186,7 +186,7 @@ and [browser problem or model problem?](browser-problem-or-model-problem.md).
 
 ---
 
-*From the [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) wiki. Codex takes the
+*From the [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) wiki. Codex takes the
 browser as a plugin, two commands and no config file, and the server says
 "downloading" instead of making you wait, so the first prompt is never a
 mystery.*

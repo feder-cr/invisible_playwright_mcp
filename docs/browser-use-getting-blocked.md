@@ -42,7 +42,7 @@ for.
 The field expects a Chromium-family browser - every value in the `channel` enum is
 Chromium, Chrome or Edge, and there is no Firefox among them. Its practical use is
 pointing at your installed Chrome rather than the bundled test Chromium.
-[Those are not the same browser](https://github.com/feder-cr/invisible_playwright/wiki/chromium-is-not-chrome):
+[Those are not the same browser](https://github.com/oss-invisible/playwright/wiki/chromium-is-not-chrome):
 the codec set differs, the branding differs, and a real Chrome install is a far more
 common thing to be than a bundled build.
 
@@ -52,10 +52,10 @@ Pointing this at a profile that has genuinely been used is the single
 highest-value change available in the configuration, because it is the only one
 that addresses history rather than hardware. An agent starting from an empty
 profile is a browser that has never been anywhere, which is
-[most of why a fresh browser scores badly](https://github.com/feder-cr/invisible_playwright/wiki/recaptcha-v3-score).
+[most of why a fresh browser scores badly](https://github.com/oss-invisible/playwright/wiki/recaptcha-v3-score).
 The traps - profile lock-in, pairing the profile with a consistent identity - are
 covered in
-[what a persistent profile fixes and breaks](https://github.com/feder-cr/invisible_playwright/wiki/persistent-profiles).
+[what a persistent profile fixes and breaks](https://github.com/oss-invisible/playwright/wiki/persistent-profiles).
 
 One thing not to over-credit: browser-use's default launch arguments already include
 automation masking (`--disable-blink-features=AutomationControlled` and related
@@ -68,21 +68,21 @@ Everything about the machine. None of the fields above changes any of these, and
 a server all of them are true at once:
 
 - **No GPU**, so WebGL reports
-  [a software renderer](https://github.com/feder-cr/invisible_playwright/wiki/webgl-renderer-strings).
+  [a software renderer](https://github.com/oss-invisible/playwright/wiki/webgl-renderer-strings).
 - **A container font set** that
-  [does not match the claimed platform](https://github.com/feder-cr/invisible_playwright/wiki/headless-fonts-differ).
+  [does not match the claimed platform](https://github.com/oss-invisible/playwright/wiki/headless-fonts-differ).
 - **No audio device**, so
-  [the audio values fall back to defaults](https://github.com/feder-cr/invisible_playwright/wiki/audiocontext-fingerprinting).
+  [the audio values fall back to defaults](https://github.com/oss-invisible/playwright/wiki/audiocontext-fingerprinting).
 - **A screen with no taskbar** and
-  [a default resolution](https://github.com/feder-cr/invisible_playwright/wiki/screen-size-headless-tells).
+  [a default resolution](https://github.com/oss-invisible/playwright/wiki/screen-size-headless-tells).
 - **Codec support** that
-  [describes a slim build rather than a desktop install](https://github.com/feder-cr/invisible_playwright/wiki/codec-fingerprinting).
+  [describes a slim build rather than a desktop install](https://github.com/oss-invisible/playwright/wiki/codec-fingerprinting).
 - **A TLS handshake**
-  [decided by the network stack before any page-level setting exists](https://github.com/feder-cr/invisible_playwright/wiki/ja3-ja4-tls-fingerprint).
+  [decided by the network stack before any page-level setting exists](https://github.com/oss-invisible/playwright/wiki/ja3-ja4-tls-fingerprint).
 
 This is why "works on my laptop, blocked in Docker" is the most common shape of the
 problem: the agent is identical in both places, and the machine is not.
-[The container version of the list](https://github.com/feder-cr/invisible_playwright/wiki/playwright-docker-detection)
+[The container version of the list](https://github.com/oss-invisible/playwright/wiki/playwright-docker-detection)
 goes through it in order.
 
 ## The tell that is specific to agent-driven sessions
@@ -118,7 +118,7 @@ goes further: it ships a Firefox patched at the C++ level as the engine behind i
 tools, so an MCP-speaking assistant - Claude Code, Claude Desktop, Cursor - drives a
 browser whose fingerprint is set in its own source. Disclosure: that server and
 this wiki have the same maintainer, and it is the route
-[invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) is built on.
+[invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) is built on.
 
 State the trade fairly, because it is a real one: going to MCP means leaving
 browser-use's agent loop and using an MCP-capable agent instead. Which side of the
@@ -185,7 +185,7 @@ for the wider landscape.
 
 ---
 
-*Written while maintaining [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), which runs
+*Written while maintaining [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp), which runs
 on the patched-Firefox engine described above. This page says that engine does not
 fit browser-use, because it does not, and a guide claiming otherwise would waste
 your afternoon.*

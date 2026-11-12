@@ -180,6 +180,6 @@ All retrieved 2026-09-03, from each project's own repository.
 
 ---
 
-*From the [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) wiki. invisible_playwright_mcp sits in the
+*From the [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) wiki. invisible_playwright_mcp sits in the
 other category, the browser agents, which is exactly why this page spends its words
 on when pixels beat structure and not the reverse.*

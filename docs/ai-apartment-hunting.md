@@ -171,7 +171,7 @@ binding, human reviews and submits. See
 
 All retrieved 2026-09-03.
 
-- The [invisible_playwright_mcp README](https://github.com/feder-cr/invisible_playwright_mcp#readme), for the
+- The [invisible_playwright_mcp README](https://github.com/oss-invisible/playwright_mcp#readme), for the
   `uvx invisible-playwright-mcp ui` command, the MCP path for assistants, and the profile and
   proxy behavior (updated for invisible_playwright_mcp 0.3.0, which removed the `do`
   subcommand).
@@ -194,6 +194,6 @@ back.
 
 ---
 
-*From the [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) wiki. The agent
+*From the [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) wiki. The agent
 reads the listings; you still take the viewing - and the flat with the
 suspiciously wide-angle photos is still small.*

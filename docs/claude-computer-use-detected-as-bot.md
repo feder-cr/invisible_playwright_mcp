@@ -37,7 +37,7 @@ later when we get to pacing.
 ## The tells it skips
 
 Most advice about detected automation targets the DOM-automation layer:
-[`navigator.webdriver`](https://github.com/feder-cr/invisible_playwright/wiki/navigator-webdriver-explained),
+[`navigator.webdriver`](https://github.com/oss-invisible/playwright/wiki/navigator-webdriver-explained),
 leftover automation globals, untrusted events dispatched from script, form fields
 set from JavaScript. Those signals exist because a selector-driven script reaches
 into the page and touches elements directly.
@@ -65,12 +65,12 @@ And look at where computer use typically runs. Anthropic's docs recommend a
 dedicated virtual machine or container with minimal privileges, and the reference
 implementation is containerized (both retrieved 2026-09-03). Sensible for safety -
 and a container answers the machine questions like a container:
-[a software WebGL renderer](https://github.com/feder-cr/invisible_playwright/wiki/webgl-renderer-strings),
-[a slim font set that does not match the claimed platform](https://github.com/feder-cr/invisible_playwright/wiki/headless-fonts-differ),
+[a software WebGL renderer](https://github.com/oss-invisible/playwright/wiki/webgl-renderer-strings),
+[a slim font set that does not match the claimed platform](https://github.com/oss-invisible/playwright/wiki/headless-fonts-differ),
 a virtual display with
-[a screen geometry no desktop has](https://github.com/feder-cr/invisible_playwright/wiki/screen-size-headless-tells).
+[a screen geometry no desktop has](https://github.com/oss-invisible/playwright/wiki/screen-size-headless-tells).
 The whole list is on the engine wiki's
-[container detection page](https://github.com/feder-cr/invisible_playwright/wiki/playwright-docker-detection).
+[container detection page](https://github.com/oss-invisible/playwright/wiki/playwright-docker-detection).
 The vision model driving the session is state of the art; the browser it is clicking
 in reports a server.
 
@@ -100,9 +100,9 @@ them. This is the general agent-timing problem, and it has
    screenshotting a whole desktop, Claude Code, Claude Desktop or Cursor can drive a
    Firefox patched at the C++ level as a set of tools, via
    [the MCP server](mcp-server.md) that ships with invisible_playwright_mcp -
-   a plugin for Claude Code: `claude plugin install invisible-playwright-mcp@feder-cr`, once
+   a plugin for Claude Code: `claude plugin install invisible-playwright-mcp@oss-invisible`, once
    the repository is added as a marketplace. Disclosure: that server and this wiki have the same maintainer, and it is the route invisible_playwright_mcp's own interface uses. For staying with the screenshot loop instead, the engine wiki shows
-   [how to back a computer-use agent with a real browser engine](https://github.com/feder-cr/invisible_playwright/wiki/back-computer-use-agent-real-browser).
+   [how to back a computer-use agent with a real browser engine](https://github.com/oss-invisible/playwright/wiki/back-computer-use-agent-real-browser).
 2. **Fix the exit.** A clean, residential-quality address, with the browser's
    timezone and locale agreeing with it. A perfect machine on a distrusted address
    still loses.
@@ -178,7 +178,7 @@ full sort.
 
 ---
 
-*Written while maintaining [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), an AI agent
+*Written while maintaining [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp), an AI agent
 on a Firefox patched at the C++ level. The pattern in this page - clean automation
 layer, guilty machine - is the single most common thing behind "my agent got
 detected", whoever's agent it is.*

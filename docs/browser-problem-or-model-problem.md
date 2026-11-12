@@ -191,13 +191,13 @@ which is a certainty no model-driven run gives you.
 
 All retrieved 2026-09-03, except the loop itself, re-read 2026-09-08.
 
-- [feder-cr/invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), this repository's
+- [oss-invisible/playwright_mcp](https://github.com/oss-invisible/playwright_mcp), this repository's
   source: `src/invisible_playwright_mcp/agent.py` (the shared loop, which runs until the model
   stops calling tools and has no turn ceiling, and the invalid-arguments
   retry), `src/invisible_playwright_mcp/web.py` (the task handle, the stop button and the cancel
   that lands at the next tool call), and the README (the engine download and
   prefetch command).
-- [invisible_playwright](https://github.com/feder-cr/invisible_playwright),
+- [invisible_playwright](https://github.com/oss-invisible/playwright),
   the engine as a library; the replay snippet above was executed against
   books.toscrape.com on 2026-09-03 and printed the line quoted.
 
@@ -207,7 +207,7 @@ All retrieved 2026-09-03, except the loop itself, re-read 2026-09-08.
 
 ---
 
-*From the [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) wiki. The model-free
+*From the [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) wiki. The model-free
 replay is how the maintainer runs this exact split while debugging; the wrong
 first version of the snippet above is left described because that is how it
 went.*

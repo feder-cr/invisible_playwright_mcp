@@ -16,7 +16,7 @@ of the two architectures, because the architectural fork they represent is
 still the fork every current tool sits on.
 
 Disclosure: this page is on the wiki of
-[invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), an open-source agent that
+[invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp), an open-source agent that
 appears in the closing section. Claims about OpenAI trace to their pages and
 mainstream reporting; claims about Anthropic trace to their live
 documentation, all retrieved 2026-09-03.
@@ -105,7 +105,7 @@ by design rather than a defect.
 **Neither controls what the website sees very well.** A hosted browser or a
 reference container is a recognizable environment:
 [a headless server machine answers a page's questions differently from a
-desktop](https://github.com/feder-cr/invisible_playwright/wiki/headless-browser-agent-on-a-server),
+desktop](https://github.com/oss-invisible/playwright/wiki/headless-browser-agent-on-a-server),
 and [an agent's pacing is its own signal](ai-agent-timing-signal.md).
 With computer use you at least own the environment and can improve it; with a
 hosted product you could not.
@@ -177,7 +177,7 @@ for the screenshot-loop architecture in open source.
 
 ---
 
-*Written while maintaining [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), an
+*Written while maintaining [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp), an
 open-source agent that competes with both approaches described here. That is
 exactly why the quotes come from the vendors' own pages: grade our homework
 against their material, not our summary of it.*

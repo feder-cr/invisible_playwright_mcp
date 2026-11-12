@@ -18,7 +18,7 @@ library call, the price is the thing to weigh and it is a recurring one:
 [MCP against a plain API](model-context-protocol-vs-api-vs-rag.md) has this
 server's per-turn bill measured.
 
-The engine is [`invisible-playwright`](https://github.com/feder-cr/invisible_playwright),
+The engine is [`invisible-playwright`](https://github.com/oss-invisible/playwright),
 a Firefox patched at the C++ source. The server ships inside the `invisible_playwright_mcp`
 package and is what `invisible_playwright_mcp` runs with no subcommand: `uvx invisible-playwright-mcp` is what a
 client registers, `python -m invisible_playwright_mcp` is what the interface spawns. Every tool
@@ -26,7 +26,7 @@ below is a thin wrapper over the engine, and the interface (`invisible-playwrigh
 client of it like any other.
 
 **How to install this, and the two ways to use it, are in
-[invisible_playwright_mcp's README](https://github.com/feder-cr/invisible_playwright_mcp#readme).** This page keeps
+[invisible_playwright_mcp's README](https://github.com/oss-invisible/playwright_mcp#readme).** This page keeps
 what the server itself owns: the config block for clients that take a file, the
 settings, and the tools.
 
@@ -406,7 +406,7 @@ STEALTHFOX_MCP_TRANSPORT=http uvx invisible-playwright-mcp        # Linux
 $env:STEALTHFOX_MCP_TRANSPORT = "http"; uvx invisible-playwright-mcp   # Windows
 ```
 
-To SEE the browser rather than share it, [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp)
+To SEE the browser rather than share it, [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp)
 shows the live page beside the conversation.
 
 ## Notes
@@ -418,5 +418,5 @@ shows the live page beside the conversation.
 
 ## License
 
-[MIT](https://github.com/feder-cr/invisible_playwright_mcp/blob/main/LICENSE),
+[MIT](https://github.com/oss-invisible/playwright_mcp/blob/main/LICENSE),
 the same as the engine it wraps.

@@ -136,6 +136,6 @@ framework these picks come from.
 
 ---
 
-*From the [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) wiki. invisible_playwright_mcp is one row
+*From the [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) wiki. invisible_playwright_mcp is one row
 in the table above, not the first, and the picks name two other tools before
 they name ours.*

@@ -16,7 +16,7 @@ question the vendor pages skip, which is whether your setup needs the layer at
 all.
 
 Disclosure before anything else: this wiki belongs to
-[invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), an open-source agent that ships
+[invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp), an open-source agent that ships
 its own browser and runs locally, which is one of the two answers to that last
 question. Our interest runs against the category, so read the closing section
 knowing that, and read the vendor descriptions knowing that every fact in them
@@ -238,7 +238,7 @@ each project's own page on that date and will drift.
 
 ---
 
-*Written while maintaining [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), a
+*Written while maintaining [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp), a
 local agent that exists so its users do not need this layer. That bias is
 stated because it is real; the vendor facts above are theirs, checked against
 their own pages.*

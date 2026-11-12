@@ -9,8 +9,8 @@ name: publish
 # BEFORE THE FIRST RUN, on PyPI: the name is unregistered, so Your projects will
 # not list it. Use Account -> Publishing -> Add a pending publisher with:
 #   PyPI Project Name: invisible-playwright-mcp
-#   Owner:             feder-cr
-#   Repository name:   invisible_playwright_mcp
+#   Owner:             oss-invisible
+#   Repository name:   playwright_mcp
 #   Workflow name:     publish.yml
 #   Environment name:  pypi
 # Until that exists the upload fails with `invalid-publisher`, which is the
