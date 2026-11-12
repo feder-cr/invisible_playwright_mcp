@@ -13,7 +13,7 @@ which is which, because the fix is different for each - and some of them are
 not fixable from the agent at all.
 
 The mechanism layer lives on the
-[invisible_playwright wiki](https://github.com/feder-cr/invisible_playwright/wiki),
+[invisible_playwright wiki](https://github.com/oss-invisible/playwright/wiki),
 which documents the fingerprinting surfaces and the detection vendors in
 depth. The pages here stay at the level of the agent: what happened, what to
 check, in what order.

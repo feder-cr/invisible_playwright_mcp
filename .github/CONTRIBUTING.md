@@ -23,8 +23,8 @@ only documentation. The package moved in the same day.
 | Repository | What it holds |
 |---|---|
 | **this one** | the interface, the agent loop, the CLI, and the MCP server (`src/invisible_playwright_mcp/mcp`: the tools, and nothing with a face) |
-| [invisible_playwright](https://github.com/feder-cr/invisible_playwright) | the Python wrapper, the launcher, and the patched browser it pins |
-| [invisible_core](https://github.com/feder-cr/invisible_core) | seed to fingerprint to preferences, proxy and geolocation |
+| [invisible_playwright](https://github.com/oss-invisible/playwright) | the Python wrapper, the launcher, and the patched browser it pins |
+| [invisible_core](https://github.com/oss-invisible/core) | seed to fingerprint to preferences, proxy and geolocation |
 
 Where things go:
 
@@ -39,8 +39,8 @@ If you are not sure, open the issue here and it will be moved.
 ## Development setup
 
 ```bash
-git clone https://github.com/feder-cr/invisible_playwright_mcp.git
-cd invisible_playwright_mcp
+git clone https://github.com/oss-invisible/playwright_mcp.git
+cd playwright_mcp
 python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -e ".[test]"
@@ -80,7 +80,7 @@ picture was the only thing that noticed.
 
 ## Opening an issue
 
-Use one of the [templates](https://github.com/feder-cr/invisible_playwright_mcp/issues/new/choose).
+Use one of the [templates](https://github.com/oss-invisible/playwright_mcp/issues/new/choose).
 Before you do, search the open and closed issues.
 
 For a bug, the two things that decide how fast it can be answered are the exact

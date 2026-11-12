@@ -13,7 +13,7 @@ DEFAULT_MODEL = "z-ai/glm-5.3-flash"
 #: them every request is anonymous traffic on the key, so the app appears
 #: nowhere however much it is used. They are constants rather than settings
 #: because they name THIS package, not the person running it.
-APP_URL = "https://github.com/feder-cr/invisible_playwright_mcp"
+APP_URL = "https://github.com/oss-invisible/playwright_mcp"
 APP_TITLE = "invisible_playwright_mcp"
 
 

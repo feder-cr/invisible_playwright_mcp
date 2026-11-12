@@ -60,8 +60,8 @@ A plain text or CSV log next to the moved data turns "trust the agent ran" into 
 
 ## Sources
 
-- [feder-cr/invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), plus its source in this repository (`src/invisible_playwright_mcp/agent.py`), retrieved 2026-09-05 and the loop re-read 2026-09-08, for what the batching section above rests on: a loop with no turn ceiling, and the whole transcript resent on every turn.
+- [oss-invisible/playwright_mcp](https://github.com/oss-invisible/playwright_mcp), plus its source in this repository (`src/invisible_playwright_mcp/agent.py`), retrieved 2026-09-05 and the loop re-read 2026-09-08, for what the batching section above rests on: a loop with no turn ceiling, and the whole transcript resent on every turn.
 
 ---
 
-*From the [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) wiki. A success message and a correctly saved row are two different facts, and the read-back-to-confirm step exists because only one of them is worth trusting.*
+*From the [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) wiki. A success message and a correctly saved row are two different facts, and the read-back-to-confirm step exists because only one of them is worth trusting.*

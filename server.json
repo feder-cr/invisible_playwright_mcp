@@ -1,19 +1,19 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.feder-cr/invisible-playwright-mcp",
+  "name": "io.github.oss-invisible/invisible-playwright-mcp",
   "title": "invisible_playwright_mcp",
   "description": "AI browser agent: browses, clicks, types, and reads real web pages from plain-English instructions.",
   "repository": {
-    "url": "https://github.com/feder-cr/invisible_playwright_mcp",
+    "url": "https://github.com/oss-invisible/playwright_mcp",
     "source": "github"
   },
-  "version": "0.73.0",
+  "version": "0.73.1",
   "packages": [
     {
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "invisible-playwright-mcp",
-      "version": "0.73.0",
+      "version": "0.73.1",
       "runtimeHint": "uvx",
       "transport": {
         "type": "stdio"

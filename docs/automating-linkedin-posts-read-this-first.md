@@ -191,6 +191,6 @@ the rest of [Using the Agent](guides-using-the-agent.md).
 
 ---
 
-*From the [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) wiki. The social series
+*From the [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) wiki. The social series
 has a page per platform; this is the platform where the honest page is the one
 that tells you why there is no walkthrough.*

@@ -25,7 +25,7 @@ Count the numbered entries.
      every command (`uvx` today; until 0.69.0 the fetch line did, and the
      fetch line left the README when the server began downloading the engine
      itself); and the lines that tell a client the server exists, one per client
-     (`claude plugin install invisible-playwright-mcp@feder-cr`, `gemini extensions install
+     (`claude plugin install invisible-playwright-mcp@oss-invisible`, `gemini extensions install
      ...`, `codex mcp add ...`). A page that carries the uv installer carries
      the install lines verbatim, every code block runs the command (the server,
      or `invisible-playwright-mcp ui`) and the fetch with the README's launcher, a page that
@@ -179,7 +179,7 @@ def fenced_blocks(text, only_languages=None):
 def runs(line, cmd):
     """Where `line` runs `cmd` as a command: (text before it, the word in the
     launcher slot) for each place. A URL or path segment (`.../invisible_playwright_mcp`) is not
-    one, and neither is a plugin id (`invisible-playwright-mcp@feder-cr`, which `claude plugin
+    one, and neither is a plugin id (`invisible-playwright-mcp@oss-invisible`, which `claude plugin
     install` takes: a name, not a command run). The launcher word is the last
     word before the command, stripped of `=` and `/` prefixes, so
     `ExecStart=/usr/bin/uvx invisible-playwright-mcp ui` reads as `uvx`."""
@@ -657,11 +657,11 @@ def selftest():
             b"```\n\n"
             # The client lines, one route per client, as the real page has
             # them: what the eighth part of the fifth check reads.
-            b"```bash\nclaude plugin marketplace add feder-cr/invisible_playwright_mcp\n"
-            b"claude plugin install invisible-playwright-mcp@feder-cr\n```\n\n"
-            b"```bash\ncodex plugin marketplace add feder-cr/invisible_playwright_mcp\n"
-            b"codex plugin add invisible-playwright-mcp@feder-cr\n```\n\n"
-            b"```bash\ngemini extensions install https://github.com/feder-cr/invisible_playwright_mcp\n```\n")
+            b"```bash\nclaude plugin marketplace add oss-invisible/playwright_mcp\n"
+            b"claude plugin install invisible-playwright-mcp@oss-invisible\n```\n\n"
+            b"```bash\ncodex plugin marketplace add oss-invisible/playwright_mcp\n"
+            b"codex plugin add invisible-playwright-mcp@oss-invisible\n```\n\n"
+            b"```bash\ngemini extensions install https://github.com/oss-invisible/playwright_mcp\n```\n")
 
         bad = {
             "banned topic": ("docs/spam.md",
@@ -810,9 +810,9 @@ def selftest():
             # accused the README of running `install invisible_playwright_mcp`.
             "the README's client lines, verbatim": (
                 "docs/plugin.md",
-                b"```bash\nclaude plugin marketplace add feder-cr/invisible_playwright_mcp\n"
-                b"claude plugin install invisible-playwright-mcp@feder-cr\n```\n"
-                b"```bash\ngemini extensions install https://github.com/feder-cr/invisible_playwright_mcp\n```\n"),
+                b"```bash\nclaude plugin marketplace add oss-invisible/playwright_mcp\n"
+                b"claude plugin install invisible-playwright-mcp@oss-invisible\n```\n"
+                b"```bash\ngemini extensions install https://github.com/oss-invisible/playwright_mcp\n```\n"),
             "a route the README teaches, named bare in prose": (
                 "docs/noun.md",
                 b"one `claude plugin install` command, once, and the tools are there\n"),

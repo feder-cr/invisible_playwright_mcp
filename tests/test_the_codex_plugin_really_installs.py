@@ -4,8 +4,8 @@ Same reason as `test_the_plugin_really_installs.py`: the Claude Code plugin
 1.0.0 validated against every document and delivered zero servers, and only
 running the client said so. Measured by hand on 2026-09-21 with codex-cli
 0.155.1 (through `npx -y @openai/codex@latest`, in a throwaway `CODEX_HOME`):
-`plugin marketplace add <this checkout>` registers `feder-cr`, `plugin add
-invisible-playwright-mcp@feder-cr` installs, `mcp list` shows
+`plugin marketplace add <this checkout>` registers `oss-invisible`, `plugin add
+invisible-playwright-mcp@oss-invisible` installs, `mcp list` shows
 `invisible_playwright_mcp  uvx invisible-playwright-mcp  enabled`, the cache
 carries `skills/setup`, and the listed version is `1.0.0` whatever the manifest
 says - so the version is not asserted here.

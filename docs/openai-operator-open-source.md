@@ -71,12 +71,12 @@ web things, this is the most capable open framework we verified.
 
 The trade-off is the mirror of its breadth: a screenshot-driven desktop agent
 is heavier per action than a browser-native one, and
-[reading the DOM versus reading pixels](https://github.com/feder-cr/invisible_playwright/wiki/dom-reading-vs-screenshot-agents)
+[reading the DOM versus reading pixels](https://github.com/oss-invisible/playwright/wiki/dom-reading-vs-screenshot-agents)
 is a real architectural fork, not a detail.
 
 ### invisible_playwright_mcp - ours, with the browser as the differentiator
 
-[github.com/feder-cr/invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp). About 30k
+[github.com/oss-invisible/playwright_mcp](https://github.com/oss-invisible/playwright_mcp). About 30k
 stars, MIT (distributions before 2 September 2026 remain AGPL-3.0). The stars
 predate the current shape: the project began as a job-application bot and is
 becoming a general web agent, which its own description says plainly.
@@ -179,7 +179,7 @@ framework above the level of any one repo.
   [Agent-S](https://github.com/simular-ai/Agent-S),
   [browserbase/open-operator](https://github.com/browserbase/open-operator),
   [All-Hands-AI/open-operator](https://github.com/All-Hands-AI/open-operator)
-  and [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) repositories, all retrieved
+  and [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) repositories, all retrieved
   2026-09-03; stars, licenses, descriptions and archive status as shown there
   that day.
 - [OpenAI computer use guide](https://platform.openai.com/docs/guides/tools-computer-use),
@@ -187,6 +187,6 @@ framework above the level of any one repo.
 
 ---
 
-*Maintained alongside [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), one of the
+*Maintained alongside [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp), one of the
 repositories on this list. The star counts that beat ours are printed anyway,
 because a survey that hides the bigger projects is an ad, not a survey.*

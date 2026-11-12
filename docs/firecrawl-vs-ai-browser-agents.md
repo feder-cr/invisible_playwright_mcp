@@ -18,7 +18,7 @@ below is the reasoning, the numbers, and the overlap where the choice gets
 genuinely interesting.
 
 Disclosure first: this wiki belongs to
-[invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), an open-source AI browser
+[invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp), an open-source AI browser
 agent, so we are a vendor of exactly one side of this comparison. Every
 Firecrawl fact below was read from Firecrawl's own repository, site or
 documentation on 2026-09-03, and the paragraph conceding their side is not
@@ -193,12 +193,12 @@ All retrieved 2026-09-03.
   the Fire-engine exclusion quoted above.
 - [Firecrawl scrape documentation](https://docs.firecrawl.dev/features/scrape):
   the pre-extraction action types.
-- [feder-cr/invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), for the agent-side
+- [oss-invisible/playwright_mcp](https://github.com/oss-invisible/playwright_mcp), for the agent-side
   claims about our own tool.
 
 ---
 
-*From the [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) wiki. invisible_playwright_mcp is an
+*From the [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) wiki. invisible_playwright_mcp is an
 agent, and this page's first paragraph hands bulk extraction to the other
 category anyway. If we only won half the comparisons, we would rather be
 trusted on that half.*

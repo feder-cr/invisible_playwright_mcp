@@ -58,7 +58,7 @@ import tomllib
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
-REGISTRY_NAME = "io.github.feder-cr/invisible-playwright-mcp"
+REGISTRY_NAME = "io.github.oss-invisible/invisible-playwright-mcp"
 
 
 def _load():
@@ -118,7 +118,7 @@ SETUP_SKILL = "skills/setup/SKILL.md"
 MCP_FILES = ("mcp.json", ".mcp.json")
 LAUNCH = {"command": "uvx", "args": ["invisible-playwright-mcp"]}
 #: The marketplace this repository IS, so `claude plugin marketplace add
-#: feder-cr/invisible_playwright_mcp` needs no catalog kept by anybody else: one entry, whose
+#: oss-invisible/playwright_mcp` needs no catalog kept by anybody else: one entry, whose
 #: source is the repository root, because the plugin is the repository. Held
 #: here because it repeats the package name, the description and the author,
 #: and because the README's install line names `<plugin>@<marketplace>`: the
@@ -436,7 +436,7 @@ def codex_marketplace_findings(package_name, market, claude_market, codex_plugin
     something other than this plugin, or nothing.
 
     Same repository, same marketplace name as Claude Code's, so the README's
-    two install lines read `invisible-playwright-mcp@feder-cr` for both clients. No version in
+    two install lines read `invisible-playwright-mcp@oss-invisible` for both clients. No version in
     the entry: measured 2026-09-21 with codex-cli 0.155.1 from a local
     marketplace, Codex lists and caches the plugin as `1.0.0` whatever the
     manifest says and whether or not the entry names one, so a version here

@@ -20,7 +20,7 @@ you, which ones nothing can fix for you, and the order to check them in. It stay
 the level of an agent user; the mechanism deep-dives live on the
 invisible_playwright wiki and are linked where they belong, starting with the
 overview of the whole model,
-[how do websites detect bots](https://github.com/feder-cr/invisible_playwright/wiki/how-do-websites-detect-bots).
+[how do websites detect bots](https://github.com/oss-invisible/playwright/wiki/how-do-websites-detect-bots).
 
 ## Layer 1: the browser fingerprint
 
@@ -30,7 +30,7 @@ order of ciphers and extensions offered, and that shape identifies the software
 sending it before any page content loads; automation stacks that are not real
 browsers, or modified ones, produce shapes no retail browser produces. The
 mechanics are on the wiki:
-[JA3 and JA4, why a TLS fingerprint cannot be patched](https://github.com/feder-cr/invisible_playwright/wiki/ja3-ja4-tls-fingerprint).
+[JA3 and JA4, why a TLS fingerprint cannot be patched](https://github.com/oss-invisible/playwright/wiki/ja3-ja4-tls-fingerprint).
 In the page, JavaScript reads dozens of properties, canvas rendering, GPU strings,
 fonts, screen values, timezone, and joins them. It is not looking for any single
 rare value; it is looking for values that disagree with each other, a browser that
@@ -56,7 +56,7 @@ residential one), what else has been done from it, and how many other clients ar
 using it right now. Sites score this before your browser is even considered, and a
 bad score blocks a perfect browser. The full mechanism, including why the network
 operator matters more than the individual address, is on the wiki:
-[ASN and IP reputation in bot detection](https://github.com/feder-cr/invisible_playwright/wiki/asn-and-ip-reputation-in-bot-detection).
+[ASN and IP reputation in bot detection](https://github.com/oss-invisible/playwright/wiki/asn-and-ip-reputation-in-bot-detection).
 
 **Can the framework fix it? No, and be suspicious of anything claiming to.** The
 exit address is supplied by you: your machine's connection, or a proxy you
@@ -162,7 +162,7 @@ by it, and any of the three can block you alone.
 **Do I need a proxy for my agent?** If your own address is the problem, or the
 task needs a different region, yes, and quality decides everything; a widely
 shared or datacenter exit can be worse than none. See the wiki's
-[IP-reputation page](https://github.com/feder-cr/invisible_playwright/wiki/asn-and-ip-reputation-in-bot-detection)
+[IP-reputation page](https://github.com/oss-invisible/playwright/wiki/asn-and-ip-reputation-in-bot-detection)
 for what actually gets scored.
 
 **Why did the agent work for ten pages and then get blocked?** That shape points
@@ -184,13 +184,13 @@ subject.
 
 All retrieved 2026-09-03.
 
-- [How do websites detect bots](https://github.com/feder-cr/invisible_playwright/wiki/how-do-websites-detect-bots),
+- [How do websites detect bots](https://github.com/oss-invisible/playwright/wiki/how-do-websites-detect-bots),
   the mechanism-level overview of the same four-layer model.
-- [JA3 and JA4: why a TLS fingerprint cannot be patched](https://github.com/feder-cr/invisible_playwright/wiki/ja3-ja4-tls-fingerprint),
+- [JA3 and JA4: why a TLS fingerprint cannot be patched](https://github.com/oss-invisible/playwright/wiki/ja3-ja4-tls-fingerprint),
   for the network side of layer 1.
-- [ASN and IP reputation in bot detection](https://github.com/feder-cr/invisible_playwright/wiki/asn-and-ip-reputation-in-bot-detection),
+- [ASN and IP reputation in bot detection](https://github.com/oss-invisible/playwright/wiki/asn-and-ip-reputation-in-bot-detection),
   for layer 2.
-- [feder-cr/invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), plus its README in this
+- [oss-invisible/playwright_mcp](https://github.com/oss-invisible/playwright_mcp), plus its README in this
   repository, for the engine, proxy and input-event claims about invisible_playwright_mcp.
 
 **See also:** [the timing signal AI agents give off](ai-agent-timing-signal.md),
@@ -200,6 +200,6 @@ All retrieved 2026-09-03.
 
 ---
 
-*From the [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) wiki. invisible_playwright_mcp's engine exists
+*From the [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) wiki. invisible_playwright_mcp's engine exists
 for layer 1, which is why this page could afford to be blunt about the other three:
 they are yours, whatever agent you run.*

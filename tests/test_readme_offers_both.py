@@ -33,7 +33,7 @@ README = pathlib.Path(__file__).resolve().parents[1] / "README.md"
 #: name: since 0.11.0 the server is `uvx invisible-playwright-mcp` with no subcommand, and
 #: `invisible_playwright_mcp` alone is also the start of `invisible-playwright-mcp ui`, so the server name could
 #: not tell the two ways apart. It was `claude mcp add` until the README
-#: taught the plugin route: `claude plugin install invisible-playwright-mcp@feder-cr`, which
+#: taught the plugin route: `claude plugin install invisible-playwright-mcp@oss-invisible`, which
 #: installs the server AND the setup skill, and which Claude Code counts as
 #: an installation of this plugin where a hand-registered server is counted
 #: by nobody. The UI way stays bare, without the `uvx `, so the test measures

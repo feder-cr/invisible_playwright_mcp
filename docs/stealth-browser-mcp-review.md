@@ -14,7 +14,7 @@ invisible_playwright_mcp you will find. It exists anyway because most of what ra
 have not read, and because a first-party review can do one thing a
 third-party one cannot: state plainly what the project does not do, and be
 accountable for it. Every factual claim below is checkable against the
-[repository](https://github.com/feder-cr/invisible_playwright_mcp) and the published package,
+[repository](https://github.com/oss-invisible/playwright_mcp) and the published package,
 both read on 2026-09-03 with the default model re-read on 2026-09-08, and the
 honest move for a reader is to treat the praise with suspicion and the
 self-criticism as reliable.
@@ -41,7 +41,7 @@ wiki documents; that earlier use is not covered here.
 There are two ways to run it, and they share one browser:
 
 - **Inside an assistant you already use.** A plugin for Claude Code
-  (`claude plugin install invisible-playwright-mcp@feder-cr`, once the repository is added as a
+  (`claude plugin install invisible-playwright-mcp@oss-invisible`, once the repository is added as a
   marketplace), an extension for Gemini CLI, or a config entry in Claude
   Desktop or Cursor, and your assistant's model does the thinking.
 - **Standalone.** `uvx invisible-playwright-mcp ui` serves a local page with chat on the
@@ -70,7 +70,7 @@ room.
 **It is honest about inputs.** Keys are handled carefully: the OpenRouter
 key is stripped from the environment the browser process starts with, by
 name and by value, and
-[a test in the repository](https://github.com/feder-cr/invisible_playwright_mcp/blob/main/tests/test_key_isolation.py)
+[a test in the repository](https://github.com/oss-invisible/playwright_mcp/blob/main/tests/test_key_isolation.py)
 fails if that stops being true.
 
 **Operational features match real use.** `--proxy` takes HTTP or SOCKS5
@@ -142,7 +142,7 @@ this, and so does this review.
 
 For the searcher asking "is invisible_playwright_mcp safe" in the download-sense: the
 canonical repository is
-[github.com/feder-cr/invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) and the
+[github.com/oss-invisible/playwright_mcp](https://github.com/oss-invisible/playwright_mcp) and the
 canonical package is
 [`invisible_playwright_mcp` on PyPI](https://pypi.org/project/invisible-playwright-mcp/). A project with this
 history has accumulated forks and mirrors on other sites, some carrying
@@ -182,7 +182,7 @@ afternoon and answers the only question that matters.
 
 ## Short answers to the questions that lead here
 
-**Is invisible_playwright_mcp legit?** The canonical repo is `feder-cr/invisible_playwright_mcp` (about 30k
+**Is invisible_playwright_mcp legit?** The canonical repo is `oss-invisible/playwright_mcp` (about 30k
 stars, MIT) and the package is `invisible-playwright-mcp` on PyPI. It is real, maintained,
 and auditable; mirrors elsewhere are not ours.
 
@@ -212,14 +212,14 @@ the MCP route.
 
 ## Sources
 
-- The [invisible_playwright_mcp repository](https://github.com/feder-cr/invisible_playwright_mcp): README, LICENSE, `pyproject.toml` and `tests/test_key_isolation.py` read in the working tree on 2026-09-03; stars, forks, license and creation date read via the GitHub API the same day; `src/invisible_playwright_mcp/llm.py`, for the default model id, re-read 2026-09-08.
+- The [invisible_playwright_mcp repository](https://github.com/oss-invisible/playwright_mcp): README, LICENSE, `pyproject.toml` and `tests/test_key_isolation.py` read in the working tree on 2026-09-03; stars, forks, license and creation date read via the GitHub API the same day; `src/invisible_playwright_mcp/llm.py`, for the default model id, re-read 2026-09-08.
 - [`invisible_playwright_mcp` on PyPI](https://pypi.org/project/invisible-playwright-mcp/), version 0.3.0 metadata checked against the index 2026-09-04.
 - The relicense commit ("Relicense under MIT", dated 2026-09-02) in the repository history, and the README's license section stating the AGPL-3.0 boundary for earlier distributions, both read 2026-09-03.
 - For comparative claims about other tools, the pages linked above carry their own dated sources; none are repeated here.
 
 ---
 
-*This is [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp)'s wiki reviewing
+*This is [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp)'s wiki reviewing
 invisible_playwright_mcp. You have every reason to discount the compliments, so we put the
 limitations in their own section and made every claim point at something
 you can check without trusting us.*

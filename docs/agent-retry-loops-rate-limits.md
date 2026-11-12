@@ -61,7 +61,7 @@ that counter by exactly one per request.
 The bottom three rows are not fixable from any browser, because the browser only
 controls what one request looks like, not how many are sent or how fast. When a
 clean fingerprint still gets blocked, volume and address are the usual reasons -
-[the engine wiki has a page on exactly that](https://github.com/feder-cr/invisible_playwright/wiki/why-blocked-with-a-clean-fingerprint).
+[the engine wiki has a page on exactly that](https://github.com/oss-invisible/playwright/wiki/why-blocked-with-a-clean-fingerprint).
 
 ## What bounds the loop in invisible_playwright_mcp
 
@@ -137,7 +137,7 @@ answers yes. Same seed, same identity, every run, so a failure is reproducible.
 **What you supply.** The engine does not change your address's reputation, does not
 create per-account quota out of nothing, and does not decide how often you run
 tasks. A real-looking browser on a
-[datacenter address is still on a datacenter address](https://github.com/feder-cr/invisible_playwright/wiki/can-websites-detect-a-datacenter-proxy-ip),
+[datacenter address is still on a datacenter address](https://github.com/oss-invisible/playwright/wiki/can-websites-detect-a-datacenter-proxy-ip),
 and a counter on the address does not care how good the browser is.
 
 Put plainly: the engine makes each request look like it came from a real person. It
@@ -198,9 +198,9 @@ immediate identical re-run.
   the next tool call) and `src/invisible_playwright_mcp/link.py` (one instruction at a time on one
   browser).
 - The engine wiki's
-  [rate limiting mechanics](https://github.com/feder-cr/invisible_playwright/wiki/how-to-rate-limit-your-scraper-playwright)
+  [rate limiting mechanics](https://github.com/oss-invisible/playwright/wiki/how-to-rate-limit-your-scraper-playwright)
   and its notes on
-  [handling 403 and 429 with backoff](https://github.com/feder-cr/invisible_playwright/wiki/how-to-handle-403-429-backoff-mid-scrape-playwright),
+  [handling 403 and 429 with backoff](https://github.com/oss-invisible/playwright/wiki/how-to-handle-403-429-backoff-mid-scrape-playwright),
   which document the same volume signal at the scraping layer.
 
 **See also:** [the timing signal AI agents give off](ai-agent-timing-signal.md) for
@@ -212,7 +212,7 @@ another agent framework.
 
 ---
 
-*Written while maintaining [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), an AI agent
+*Written while maintaining [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp), an AI agent
 on a Firefox patched at the C++ level. The first velocity flag I ever chased was
 raised by our own test harness hammering one endpoint from one address - the browser
 was innocent, the loop was not.*

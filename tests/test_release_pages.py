@@ -55,7 +55,7 @@ import urllib.request
 
 import pytest
 
-REPOSITORY = "feder-cr/invisible_playwright_mcp"
+REPOSITORY = "oss-invisible/playwright_mcp"
 
 #: The distributions this repository has published under, in order, each with the
 #: last version that belongs to it: (name, after, through).

@@ -15,7 +15,7 @@ the axes, a short decision path, and the cluster of detailed comparisons
 around it.
 
 The conflict of interest, up front: this is the wiki of
-[invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), an open-source agent that
+[invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp), an open-source agent that
 appears below as one of the candidates. Every claim about another tool on this
 page and its siblings traces to that tool's own site, repository or
 documentation, retrieved 2026-09-03, and the pages say so where a competitor
@@ -52,16 +52,16 @@ decides what a website sees when it looks back.
   bounded by the vendor's safety envelope.
 - **A stock automation build, driven over an automation protocol**
   (browser-use, Skyvern): the standard stack, with
-  [its own observable characteristics](https://github.com/feder-cr/invisible_playwright/wiki/bidi-vs-cdp-detection)
-  and [a build that is not the retail browser](https://github.com/feder-cr/invisible_playwright/wiki/chromium-is-not-chrome).
+  [its own observable characteristics](https://github.com/oss-invisible/playwright/wiki/bidi-vs-cdp-detection)
+  and [a build that is not the retail browser](https://github.com/oss-invisible/playwright/wiki/chromium-is-not-chrome).
 - **A screenshot loop over a whole desktop** (Agent S3, Claude computer use):
   most general, heaviest per action -
-  [DOM reading versus pixel reading is a real fork](https://github.com/feder-cr/invisible_playwright/wiki/dom-reading-vs-screenshot-agents).
+  [DOM reading versus pixel reading is a real fork](https://github.com/oss-invisible/playwright/wiki/dom-reading-vs-screenshot-agents).
 - **A browser modified at the source level** (invisible_playwright_mcp's engine): a Firefox
   patched in C++ to present a normal desktop fingerprint, with identity
   derived from a seed so runs replay. This is our approach, and the axis where
   we have something the others do not; the mechanics live on the
-  [engine wiki](https://github.com/feder-cr/invisible_playwright/wiki/do-websites-know-you-are-using-a-script)
+  [engine wiki](https://github.com/oss-invisible/playwright/wiki/do-websites-know-you-are-using-a-script)
   rather than in adjectives here.
 
 ## Axis 3: where it runs
@@ -71,7 +71,7 @@ keep data and credentials with you and cost only tokens; clouds (Browser Use
 Cloud, Skyvern Cloud) sell scale and management; vendor products keep both
 the model and the environment. One non-obvious note for local runs: the
 machine itself answers some of a website's questions, and
-[a bare server answers them badly](https://github.com/feder-cr/invisible_playwright/wiki/headless-browser-agent-on-a-server).
+[a bare server answers them badly](https://github.com/oss-invisible/playwright/wiki/headless-browser-agent-on-a-server).
 
 ## Axis 4: what happens when a site pushes back
 
@@ -161,14 +161,14 @@ material, and the disclosure is at the top instead of the bottom.
 
 ## Sources
 
-- The [browser-use](https://github.com/browser-use/browser-use), [Skyvern](https://github.com/Skyvern-AI/skyvern), [Agent-S](https://github.com/simular-ai/Agent-S) and [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) repositories, retrieved 2026-09-03.
+- The [browser-use](https://github.com/browser-use/browser-use), [Skyvern](https://github.com/Skyvern-AI/skyvern), [Agent-S](https://github.com/simular-ai/Agent-S) and [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) repositories, retrieved 2026-09-03.
 - [Anthropic: computer use tool documentation](https://platform.claude.com/docs/en/agents-and-tools/tool-use/computer-use-tool), retrieved 2026-09-03, and coverage of Claude in Chrome's general availability surfaced via search the same day.
 - [Wikipedia: OpenAI Operator](https://en.wikipedia.org/wiki/OpenAI_Operator), retrieved 2026-09-03, and [OpenAI help: Evolving Atlas into ChatGPT](https://help.openai.com/en/articles/20001371-evolving-atlas-into-chatgpt-for-browser-based-agentic-work), surfaced via search 2026-09-03, for the vendor-churn timeline the first axis leans on.
 - [OpenAI computer use guide](https://platform.openai.com/docs/guides/tools-computer-use), surfaced via search 2026-09-03.
 
 ---
 
-*Written while maintaining [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), an
+*Written while maintaining [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp), an
 open-source AI web agent with an obvious stake in step 6 of the decision path.
 The guide above is the one we would want handed to us, which is why steps 1
 through 5 point somewhere else.*

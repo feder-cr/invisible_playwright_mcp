@@ -20,7 +20,7 @@ because the churn confused a lot of people, and then the practical part: what
 someone who wants that capability today can actually use.
 
 A note on who is telling you this: this page lives on the wiki of
-[invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), an open-source agent in the same
+[invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp), an open-source agent in the same
 space, which appears once in the alternatives section below with that conflict
 declared.
 
@@ -155,7 +155,7 @@ replacement that will not need replacing.
 
 ---
 
-*Kept current by the maintainers of [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp),
+*Kept current by the maintainers of [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp),
 an open-source AI web agent. We have an interest in the answer being "no", so
 every date above traces to OpenAI's own pages or mainstream reporting rather
 than to us.*

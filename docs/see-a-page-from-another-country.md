@@ -105,7 +105,7 @@ And a datacentre address in the right country is still a datacentre address,
 which some sites treat differently from a residential one for reasons that have
 nothing to do with geography. That is a separate subject with its own page on the
 engine side:
-[ASN and IP reputation](https://github.com/feder-cr/invisible_playwright/wiki/asn-and-ip-reputation-in-bot-detection).
+[ASN and IP reputation](https://github.com/oss-invisible/playwright/wiki/asn-and-ip-reputation-in-bot-detection).
 
 ## Short answers to the questions that lead here
 

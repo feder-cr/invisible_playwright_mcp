@@ -156,13 +156,13 @@ pages a day, a script is cheaper, faster, and the better tool.
 
 Retrieved 2026-09-05.
 
-- [invisible_playwright_mcp README](https://github.com/feder-cr/invisible_playwright_mcp#readme), for the
+- [invisible_playwright_mcp README](https://github.com/oss-invisible/playwright_mcp#readme), for the
   `uvx invisible-playwright-mcp ui` interface, the `--proxy` option and its effect on timezone,
   locale and egress, and the `--profile-dir` option for keeping a session
   between runs.
 
 ---
 
-*From the [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) wiki. The agent reads
+*From the [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) wiki. The agent reads
 the number that is actually on the screen; catching a mispriced sale banner
 before checkout is still the reader's job.*

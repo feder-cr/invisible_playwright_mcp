@@ -41,8 +41,8 @@ The attachment mechanics do not change based on where the model lives. The
 shape, even though Claude Code's own model is hosted rather than local:
 
 ```bash
-claude plugin marketplace add feder-cr/invisible_playwright_mcp
-claude plugin install invisible-playwright-mcp@feder-cr
+claude plugin marketplace add oss-invisible/playwright_mcp
+claude plugin install invisible-playwright-mcp@oss-invisible
 ```
 
 Two commands, once, and the browser's tools show up in that client from then on. A
@@ -144,7 +144,7 @@ fault regardless of any model; if not, the model was the variable.
 
 Retrieved 2026-09-05.
 
-- [feder-cr/invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), this repository's README,
+- [oss-invisible/playwright_mcp](https://github.com/oss-invisible/playwright_mcp), this repository's README,
   `src/invisible_playwright_mcp/llm.py` (the hardcoded OpenRouter base URL and default model) and
   `src/invisible_playwright_mcp/cli.py` (the `ui` command's key requirement and its own note that
   driving the browser without a model at all is the `invisible_playwright` library's
@@ -152,7 +152,7 @@ Retrieved 2026-09-05.
 
 ---
 
-*From the [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) wiki. This interface has
+*From the [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) wiki. This interface has
 never had a local-model flag to remove; the local route has always run through a
 different client entirely, and that is worth saying plainly before anyone goes
 looking for a setting that isn't there.*

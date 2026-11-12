@@ -198,7 +198,7 @@ All retrieved 2026-09-21.
 - [The MCP server page](mcp-server.md), for the
   config block, the tool list, the environment variables, the engine-download
   behavior and the "added is not connected" warning.
-- [feder-cr/invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), plus its README in
+- [oss-invisible/playwright_mcp](https://github.com/oss-invisible/playwright_mcp), plus its README in
   this repository, for the platform boundary and the shared engine cache.
 
 **See also:** [using a Playwright MCP server with Claude Code](how-to-use-a-playwright-mcp-server-with-claude-code.md),
@@ -208,7 +208,7 @@ All retrieved 2026-09-21.
 
 ---
 
-*From the [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) wiki. AdaL takes
+*From the [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) wiki. AdaL takes
 the browser with one slash command and no config file, and the config canon
 still lives in one place on purpose: this page is the tour around it, not a
 copy of it.*

@@ -186,7 +186,7 @@ jobs:
         with:
           node-version: "22"
       # uv from astral's installer, not from astral-sh/setup-uv: this
-      # repository's Actions policy allows actions by feder-cr, by GitHub, or
+      # repository's Actions policy allows actions by oss-invisible, by GitHub, or
       # pypa/gh-action-pypi-publish, and the first run of this job died at
       # startup on exactly that. The PATH line and not the README's `source
       # $HOME/.local/bin/env`: on a runner ~/.local/bin is already on the PATH,

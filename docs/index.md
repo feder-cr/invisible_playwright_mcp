@@ -9,7 +9,7 @@ invisible_playwright_mcp is an open-source AI browser agent: a web browsing agen
 around it - what an AI web agent is, how the tools in this space compare,
 what to do when an agent gets blocked, and how to put an agent to work.
 
-The [README](https://github.com/feder-cr/invisible_playwright_mcp#readme) is the fastest way to
+The [README](https://github.com/oss-invisible/playwright_mcp#readme) is the fastest way to
 run invisible_playwright_mcp. The pages here are for the questions that come before and after:
 which tool fits, why something failed, and what is actually happening
 underneath. Every page on this wiki is one link away from this one.
@@ -96,7 +96,7 @@ Task-shaped guides for putting an AI agent to work on real websites.
 invisible_playwright_mcp drives a Firefox patched at the C++ level so the browser itself looks
 and behaves like a normal desktop browser. That engine has its own
 documentation, maintained with the same care as this wiki: the
-[invisible_playwright wiki](https://github.com/feder-cr/invisible_playwright/wiki)
+[invisible_playwright wiki](https://github.com/oss-invisible/playwright/wiki)
 covers browser fingerprinting, bot-detection vendors, network and proxy
 mechanics, and the automation layer in depth. Pages here link into it wherever
 the mechanism matters.

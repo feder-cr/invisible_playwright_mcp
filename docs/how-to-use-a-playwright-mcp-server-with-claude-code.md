@@ -31,8 +31,8 @@ engine build for it was `firefox-20` - and [uv](https://docs.astral.sh/uv/),
 because the plugin runs the server with `uvx`. Then, once:
 
 ```bash
-claude plugin marketplace add feder-cr/invisible_playwright_mcp
-claude plugin install invisible-playwright-mcp@feder-cr
+claude plugin marketplace add oss-invisible/playwright_mcp
+claude plugin install invisible-playwright-mcp@oss-invisible
 ```
 
 The first line registers the invisible_playwright_mcp repository as a plugin marketplace, which
@@ -141,8 +141,8 @@ results, and short steps keep its context small and its mistakes cheap.
 ## Short answers to the questions that lead here
 
 **How do I add invisible_playwright_mcp's browser to Claude Code?**
-`claude plugin marketplace add feder-cr/invisible_playwright_mcp`, then
-`claude plugin install invisible-playwright-mcp@feder-cr`, once, with uv installed. New
+`claude plugin marketplace add oss-invisible/playwright_mcp`, then
+`claude plugin install invisible-playwright-mcp@oss-invisible`, once, with uv installed. New
 sessions then have the browser tools in `/mcp`.
 
 **Do I need an OpenRouter key for this?** No. The key is only for invisible_playwright_mcp's own
@@ -177,7 +177,7 @@ arithmetic measured on this one.
 
 All retrieved 2026-09-03.
 
-- [feder-cr/invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp), this repository's
+- [oss-invisible/playwright_mcp](https://github.com/oss-invisible/playwright_mcp), this repository's
   README (the verbatim install commands, the prerequisites and platforms, the
   engine download and prefetch, "anything the interface can do, your assistant
   can do too"), its `.claude-plugin/` (the plugin manifest and the marketplace
@@ -196,7 +196,7 @@ and [browser problem or model problem?](browser-problem-or-model-problem.md).
 
 ---
 
-*From the [invisible_playwright_mcp](https://github.com/feder-cr/invisible_playwright_mcp) wiki. Claude Code is
+*From the [invisible_playwright_mcp](https://github.com/oss-invisible/playwright_mcp) wiki. Claude Code is
 the shortest route into this browser - a plugin, against a config file
 everywhere else - and the README calls the engine fetch "the download nobody
 warns you about", so consider yourself warned.*
