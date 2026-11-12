@@ -15,18 +15,18 @@ Multiply by turns.
 ## The measurement, from our own server
 
 Nobody publishes this figure, so here is ours, enumerated from the running
-server's own tool registry on 2026-10-12 and counted with a tokenizer rather
+server's own tool registry on 2026-11-12 and counted with a tokenizer rather
 than a characters-per-token rule of thumb:
 
 | | |
 |---|---|
-| Tools exposed | **17** |
-| Description characters | 9,207 |
-| Tokens, descriptions alone | 2,124 |
-| Tokens, complete definitions resent every turn | **3,497** |
-| Median tokens per tool | 189 |
+| Tools exposed | **18** |
+| Description characters | 9,657 |
+| Tokens, descriptions alone | 2,223 |
+| Tokens, complete definitions resent every turn | **3,720** |
+| Median tokens per tool | 196 |
 
-A forty-turn browsing session therefore spends on the order of **140,000
+A forty-turn browsing session therefore spends on the order of **149,000
 tokens** restating what the tools are, before counting a single page of content
 or a word of the model's reasoning. Two servers of that size, and it doubles.
 
@@ -91,7 +91,7 @@ measurements, including the one that reverses on a long page.
 **Is there a hard limit on MCP tools?** Not in the protocol. Clients impose
 their own caps, and the model's ability to choose degrades before any cap.
 
-**How much context do MCP tools use?** Ours: 3,497 tokens on every turn, for 17
+**How much context do MCP tools use?** Ours: 3,720 tokens on every turn, for 18
 tools. Yours scales with description length and argument schemas, not just
 count.
 
@@ -113,11 +113,11 @@ of four decisions is exactly this budget.
 
 ## Sources
 
-- This project's own MCP server, enumerated through its tool registry on 2026-10-12: 17 tools, 9,207 characters of description, 3,497 tokens for the complete definitions, median 189 tokens per tool. Tokens counted with `tiktoken` (`o200k_base`), not estimated from character count.
+- This project's own MCP server, enumerated through its tool registry on 2026-11-12: 18 tools, 9,657 characters of description, 3,720 tokens for the complete definitions, median 196 tokens per tool. Tokens counted with `tiktoken` (`o200k_base`), not estimated from character count.
 - [The Model Context Protocol documentation](https://modelcontextprotocol.io/docs/learn/server-concepts), retrieved 2026-09-11, for `tools/list` and the schema-defined shape of a tool.
 
 ---
 
-*Written while maintaining a 17-tool server, which is the number this page uses
+*Written while maintaining an 18-tool server, which is the number this page uses
 as its example rather than as its recommendation. The measurement is published
 because the advice is worthless without it.*
