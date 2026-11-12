@@ -7,13 +7,13 @@
     "url": "https://github.com/oss-invisible/playwright_mcp",
     "source": "github"
   },
-  "version": "0.73.0",
+  "version": "0.73.1",
   "packages": [
     {
       "registryType": "pypi",
       "registryBaseUrl": "https://pypi.org",
       "identifier": "invisible-playwright-mcp",
-      "version": "0.73.0",
+      "version": "0.73.1",
       "runtimeHint": "uvx",
       "transport": {
         "type": "stdio"
