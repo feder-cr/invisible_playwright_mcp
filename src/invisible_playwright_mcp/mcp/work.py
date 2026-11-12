@@ -541,7 +541,7 @@ class Work:
         return await self._act(role or DEFAULT_BROWSER_ID, fn, *args, **kwargs)
 
     async def typing(self, fn: Callable[..., Awaitable], selector: str, text: str,
-                     role: Optional[str] = None) -> str:
+                     role: Optional[str] = None, **kwargs) -> str:
         """Type, through the input lock like any action, answering within
         `ANSWER_WITHIN_S` whether or not the typing has finished.
 
@@ -568,7 +568,7 @@ class Work:
 
         async def run():
             async with lock:
-                return await self._act(at, fn, selector, text)
+                return await self._act(at, fn, selector, text, **kwargs)
 
         task = asyncio.create_task(run())
         rec = _Typing(task, selector, len(text), time.monotonic())

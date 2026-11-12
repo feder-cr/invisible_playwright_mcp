@@ -190,6 +190,169 @@ def number_matches(elements: list, orders: dict) -> None:
             e["selector"] = "%s >> nth=%d" % (selector, order.index(path))
 
 
+# --- frames ----------------------------------------------------------------
+
+#: How deep a `frame` chain may go. Plaid inside Square is one level; a
+#: payment widget inside a checkout iframe is two. Deeper is a page this
+#: server has not met, and refusing it says so instead of guessing.
+FRAME_DEPTH = 4
+
+#: What the snapshot needs of an <iframe> element, asked in its PARENT
+#: document: a selector that reaches it alone there, whether it is painted,
+#: and where its content box starts in the parent's viewport, so the
+#: elements inside can be given `at` coordinates that browser_click_at takes.
+#:
+#: ⛔ THE SELECTOR IS CHECKED IN THE PARENT'S LIGHT DOM ONLY. An iframe inside
+#: a shadow root gets none: `_frame_target` resolves through the engine, which
+#: pierces shadow roots, and a selector unique in one place and not the other
+#: would name a different frame. One that cannot be checked is not handed out.
+FRAME_INFO_JS = """(el) => {
+    const doc = el.ownerDocument;
+    const r = el.getBoundingClientRect(), s = getComputedStyle(el);
+    const shown = r.width > 0 && r.height > 0 && s.visibility !== 'hidden' &&
+        s.display !== 'none' && (typeof el.checkVisibility !== 'function' ||
+        el.checkVisibility({opacityProperty: true, visibilityProperty: true}));
+    const left = r.left + el.clientLeft + (parseFloat(s.paddingLeft) || 0);
+    const top = r.top + el.clientTop + (parseFloat(s.paddingTop) || 0);
+    const out = {shown, left, top, selector: null};
+    if (el.getRootNode() !== doc) return out;
+    const tag = el.tagName.toLowerCase();
+    const cssq = v => (window.CSS && CSS.escape) ? CSS.escape(v) : v.replace(/[^\\w-]/g, '\\\\$&');
+    const attr = v => String(v).replace(/\\\\/g, '\\\\\\\\').replace(/'/g, "\\\\'");
+    const tries = [];
+    if (el.id) tries.push('#' + cssq(el.id));
+    for (const name of ['name', 'title', 'data-testid', 'aria-label'])
+        if (el.getAttribute(name)) tries.push(tag + '[' + name + "='" + attr(el.getAttribute(name)) + "']");
+    for (const sel of tries) {
+        try {
+            const found = doc.querySelectorAll(sel);
+            if (found.length === 1 && found[0] === el) { out.selector = sel; break; }
+        } catch (err) {}
+    }
+    return out;
+}"""
+
+
+def frame_chain(frame) -> list[str]:
+    """The `frame` argument as a list of iframe selectors, outermost first.
+
+    None or [] is the top-level document, exactly as before frames existed."""
+    if frame is None:
+        return []
+    if isinstance(frame, str) or not isinstance(frame, (list, tuple)):
+        raise ValueError("frame must be a list of iframe selectors, outermost first, "
+                         "as browser_snapshot reports it in each element's `frame`")
+    if len(frame) > FRAME_DEPTH:
+        raise ValueError("frame is nested %d deep; at most %d is supported" % (len(frame), FRAME_DEPTH))
+    for part in frame:
+        if not isinstance(part, str) or not part.strip():
+            raise ValueError("each frame selector must be a non-empty string")
+    return list(frame)
+
+
+async def frame_target(session, frame=None):
+    """The page, or the frame a `frame` chain names: every selector tool acts
+    on what this returns, so one rule decides which document a call reaches.
+
+    Each step must match exactly ONE element and it must be an <iframe> or
+    <frame> with a document: a selector that matched two would make the
+    choice the engine's, and a caller who checked one frame's origin must
+    not have its call land in another. It is resolved again on every call,
+    so a frame the page replaced is found afresh, never remembered."""
+    chain = frame_chain(frame)
+    page = session.page()
+    if not chain:
+        return page
+    current = page.main_frame
+    for depth, part in enumerate(chain):
+        found = await current.query_selector_all(part)
+        try:
+            if len(found) != 1:
+                raise RuntimeError(
+                    "frame %r matches %d elements%s; each frame selector must match exactly "
+                    "one <iframe>. browser_snapshot lists each frame's `frame`"
+                    % (part, len(found), " in frame %d" % depth if depth else ""))
+            tag = await found[0].evaluate("el => el.tagName")
+            if tag not in ("IFRAME", "FRAME"):
+                raise RuntimeError("frame %r is a <%s>, not an <iframe>" % (part, str(tag).lower()))
+            child = await found[0].content_frame()
+            if child is None:
+                raise RuntimeError("frame %r has no document yet" % part)
+        finally:
+            for element in found:
+                with swallow("a handle the page already dropped needs no release"):
+                    await element.dispose()
+        current = child
+    return current
+
+
+async def _read(target, expression):
+    """`evaluate_read` where the target has it, else `evaluate`.
+
+    The engine's public Frame has no `evaluate_read` (only Page does), so a
+    read inside a frame is sent once: a frame that navigates under it fails
+    the read rather than being read again on its successor."""
+    read = getattr(target, "evaluate_read", None)
+    return await (read or target.evaluate)(expression)
+
+
+async def _snapshot_frames(parent, chain, offset, out, frames) -> None:
+    """Append the controls of every painted child frame of `parent`, each
+    tagged with the `frame` chain that reaches it and its frame's origin.
+
+    `at` is moved into the top-level viewport, so browser_click_at takes it as
+    it takes any other; `frame_at` keeps the frame's own coordinates, which
+    page script inside the frame computes. A frame's URL is not reported: an
+    embedded widget's URL commonly carries its session token in the query."""
+    if len(chain) >= FRAME_DEPTH:
+        return
+    for child in parent.child_frames:
+        try:
+            element = await child.frame_element()
+            try:
+                info = await element.evaluate(FRAME_INFO_JS)
+            finally:
+                with swallow("a handle the page already dropped needs no release"):
+                    await element.dispose()
+        except Exception:  # noqa: BLE001 - one frame must not cost the page
+            continue
+        if not isinstance(info, dict) or not info.get("shown"):
+            continue
+        try:
+            origin = await _read(child, "() => location.origin")
+        except Exception:  # noqa: BLE001
+            origin = None
+        selector = info.get("selector")
+        entry = {"origin": origin}
+        if not selector:
+            # Listed, so a caller sees the frame is there, but with no way in:
+            # its controls are not reported, because nothing could act on them.
+            entry["unaddressable"] = True
+            frames.append(entry)
+            continue
+        here = chain + [selector]
+        entry["frame"] = here
+        frames.append(entry)
+        dx, dy = offset[0] + info["left"], offset[1] + info["top"]
+        try:
+            sub = await _read(child, SNAPSHOT_JS)
+            elements = sub.get("interactive_elements", [])
+            await _resolve_nth(child, elements)
+        except Exception:  # noqa: BLE001
+            entry["unreadable"] = True
+            continue
+        if sub.get("unmeasurable"):
+            entry["unmeasurable"] = sub["unmeasurable"]
+        for e in elements:
+            e["frame"] = here
+            e["frame_origin"] = origin
+            if isinstance(e.get("at"), list) and len(e["at"]) == 2:
+                e["frame_at"] = e["at"]
+                e["at"] = [round(e["at"][0] + dx), round(e["at"][1] + dy)]
+            out.append(e)
+        await _snapshot_frames(child, here, (dx, dy), out, frames)
+
+
 #: ⛔ THE SELECTOR COMES FROM `clean.py` AND IS NOT WRITTEN HERE. It was a
 #: hand-typed list of seven roles beside a declaration of nineteen, in another
 #: module, in a language where nothing could compare them - so they drifted,
@@ -504,10 +667,18 @@ async def snapshot(session) -> str:
     # replaces itself (invisible-playwright 0.35.2, [B285]).
     d = await page.evaluate_read(SNAPSHOT_JS)
     await _resolve_nth(page, d.get("interactive_elements", []))
+    # Controls inside iframes, cross-origin ones included: the engine reads
+    # each frame in its own document, which page script in the parent cannot.
+    frames: list = []
+    main = getattr(page, "main_frame", None)
+    if main is not None:
+        await _snapshot_frames(main, [], (0, 0), d.setdefault("interactive_elements", []), frames)
+    if frames:
+        d["frames"] = frames
     return json.dumps(d)
 
 
-async def read_html(session, mode: str = "form") -> str:
+async def read_html(session, mode: str = "form", frame=None) -> str:
     """The page's markup, reduced to what is worth reading.
 
     Two steps, and they are split because only one of them can be done in each
@@ -526,7 +697,10 @@ async def read_html(session, mode: str = "form") -> str:
     """
     # A read without effects, read again on the page that replaced the one it
     # went to: see `snapshot`.
-    html = await session.page().evaluate_read(clean.VISIBLE_HTML_JS)
+    #
+    # `frame` reads the document inside an iframe instead (browser_snapshot
+    # reports each one's chain); without it, the top-level document as before.
+    html = await _read(await frame_target(session, frame), clean.VISIBLE_HTML_JS)
     return clean.clean_page(html, mode)
 
 
@@ -694,7 +868,7 @@ def _explain(exc, what: str, why: dict) -> RuntimeError:
 ACTION_TIMEOUT_MS = 15_000
 
 
-async def _on_selector(session, selector: str, what: str, act):
+async def _on_selector(session, selector: str, what: str, act, on=None):
     """Run an action aimed at a selector, and when it fails say why and what
     follows from it.
 
@@ -720,7 +894,7 @@ async def _on_selector(session, selector: str, what: str, act):
         return await act()
     except Exception as exc:
         try:
-            why = await _diagnose(session.page(), selector)
+            why = await _diagnose(on if on is not None else session.page(), selector)
         except Exception:
             why = None
         if not why:
@@ -728,11 +902,12 @@ async def _on_selector(session, selector: str, what: str, act):
         raise _explain(exc, what, why) from exc
 
 
-async def click(session, selector: str) -> str:
+async def click(session, selector: str, frame=None) -> str:
     """Click an element, and say what stopped it when nothing happens."""
+    target = await frame_target(session, frame)
     return await _on_selector(
         session, selector, "click",
-        lambda: session.page().click(selector, timeout=ACTION_TIMEOUT_MS)) or f"clicked {selector}"
+        lambda: target.click(selector, timeout=ACTION_TIMEOUT_MS), on=target) or f"clicked {selector}"
 
 
 async def click_at(session, x: float, y: float, hold_seconds: float = 0.0) -> bytes:
@@ -841,7 +1016,7 @@ def what_the_field_kept(selector: str, text: str, before: dict, after: dict) -> 
     return "typed into %s; the page shows it as %s" % (selector, _shown(value, secret))
 
 
-async def type_text(session, selector: str, text: str) -> str:
+async def type_text(session, selector: str, text: str, frame=None) -> str:
     """Type into a field the way a person does, and say what the field kept.
 
     The engine's `fill`: focus, the typist's pause (longer while the page is
@@ -867,15 +1042,16 @@ async def type_text(session, selector: str, text: str) -> str:
     would outlast a client's patience goes on in the background
     (`Work.typing`), so typing it still finishes.
     """
-    page = session.page()
+    # `frame` types into a field inside an iframe.
+    page = await frame_target(session, frame)
     before = await _on_selector(session, selector, "typing",
-                                lambda: _field_state(page, selector))
+                                lambda: _field_state(page, selector), on=page)
     await _on_selector(session, selector, "typing",
-                       lambda: page.fill(selector, text, timeout=ACTION_TIMEOUT_MS))
+                       lambda: page.fill(selector, text, timeout=ACTION_TIMEOUT_MS), on=page)
     return what_the_field_kept(selector, text, before, await _field_state(page, selector))
 
 
-async def select_option(session, selector: str, value: str) -> str:
+async def select_option(session, selector: str, value: str, frame=None) -> str:
     """Choose an option in a `<select>`, by its value OR by its visible label.
 
     ⛔ IT EXISTS BECAUSE ITS ABSENCE PUSHED MODELS INTO A DETECTABLE WORKAROUND.
@@ -902,7 +1078,7 @@ async def select_option(session, selector: str, value: str) -> str:
     mapping, and `tests/mcp_server/test_shadow_roots.py` to a label chosen on a
     real page.
     """
-    page = session.page()
+    page = await frame_target(session, frame)
 
     async def choose():
         try:
@@ -917,7 +1093,7 @@ async def select_option(session, selector: str, value: str) -> str:
                 return []
             raise
 
-    chosen = await _on_selector(session, selector, "select", choose)
+    chosen = await _on_selector(session, selector, "select", choose, on=page)
     if not chosen:
         # Playwright can also answer with an empty list rather than raising
         # when nothing matched, so a caller reading only the exception would
@@ -1400,7 +1576,7 @@ def _refuse_script_interaction(expression: str) -> None:
                 "answer rather than working around it.")
 
 
-async def evaluate(session, expression: str) -> str:
+async def evaluate(session, expression: str, frame=None) -> str:
     """Read from the page. Acting on it goes through the named tools.
 
     The refusal is deliberately narrow: it looks at what is being ASSIGNED or
@@ -1408,4 +1584,5 @@ async def evaluate(session, expression: str) -> str:
     only `el.value = 'x'` does not.
     """
     _refuse_script_interaction(expression)
-    return json.dumps(await session.page().evaluate(expression))
+    target = await frame_target(session, frame)
+    return json.dumps(await target.evaluate(expression))
