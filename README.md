@@ -127,6 +127,17 @@ Passing `--openrouter-key` puts the key in your shell history, and on Linux in
 the process list. `OPENROUTER_API_KEY` in the environment or in a `.env` avoids
 both.
 
+### Native dialogs
+
+To accept a confirmation, call `browser_handle_dialog(accept=true)` **before**
+the click or other action that opens it. The response is one-shot, expires
+after 60 seconds (configurable up to 600), and a second call replaces it.
+For a prompt, also pass `prompt_text`. Unarmed dialogs are dismissed and
+reported; `beforeunload` is accepted to preserve navigation behavior.
+Image tools retain news for the next text-returning tool or `browser_status`,
+which also shows the arm and recent dialogs. All answers use the engine's
+native dialog API, never page-script overrides.
+
 ## The wiki: AI browser-agent guides
 
 The reading room around the agent lives in the

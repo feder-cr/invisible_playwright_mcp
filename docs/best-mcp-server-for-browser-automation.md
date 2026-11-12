@@ -79,9 +79,9 @@ tools is not more capable than one with twenty; it is harder for a model to
 choose within, and every tool description costs context on every turn.
 
 To put a number on the cost rather than assert it, here is ours, read from our
-own registry on 2026-10-12: **17 tools, 9,207 characters of description, and
-3,497 tokens on every turn** once the JSON schema for each tool's arguments
-is counted with it, which it always is. Descriptions alone are 1,848 of those
+own registry on 2026-11-12: **18 tools, 9,657 characters of description, and
+3,720 tokens on every turn** once the JSON schema for each tool's arguments
+is counted with it, which it always is. Descriptions alone are 2,223 of those
 tokens; the schemas are the other third, and they are the half nobody counts.
 A server advertising a hundred tools of similar size is asking for roughly
 six times that, on every turn, for the whole session. Ask any server you are

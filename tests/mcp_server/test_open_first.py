@@ -111,6 +111,7 @@ EVERY_TOOL = [
     ("browser_take_screenshot", {}),
     ("browser_watch", {}),
     ("browser_click", {"selector": "#go"}),
+    ("browser_handle_dialog", {"accept": True}),
     ("browser_click_at", {"x": 1.0, "y": 1.0}),
     ("browser_type", {"selector": "#q", "text": "hi"}),
     ("browser_select_option", {"selector": "#s", "value": "a"}),
