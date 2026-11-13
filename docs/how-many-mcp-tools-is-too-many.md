@@ -15,26 +15,26 @@ Multiply by turns.
 ## The measurement, from our own server
 
 Nobody publishes this figure, so here is ours, enumerated from the running
-server's own tool registry on 2026-10-12 and counted with a tokenizer rather
+server's own tool registry on 2026-10-29 and counted with a tokenizer rather
 than a characters-per-token rule of thumb:
 
 | | |
 |---|---|
-| Tools exposed | **17** |
-| Description characters | 9,207 |
-| Tokens, descriptions alone | 2,124 |
-| Tokens, complete definitions resent every turn | **3,497** |
-| Median tokens per tool | 189 |
+| Tools exposed | **19** |
+| Description characters | 10,170 |
+| Tokens, descriptions alone | 2,201 |
+| Tokens, complete definitions resent every turn | **3,948** |
+| Median tokens per tool | 182 |
 
-A forty-turn browsing session therefore spends on the order of **140,000
+A forty-turn browsing session therefore spends on the order of **158,000
 tokens** restating what the tools are, before counting a single page of content
 or a word of the model's reasoning. Two servers of that size, and it doubles.
 
 **The gap between the third row and the fourth is the part to take away.** A
 tool is not sent as its description; it is sent as a name, a description and a
-JSON schema for its arguments, and the schema is a third of the weight here.
+JSON schema for its arguments, and the schema is nearly half of the weight here.
 Counting descriptions alone is the natural way to measure and it understates the
-bill by half as much again - which is what an earlier version of this page did,
+bill by nearly as much again - which is what an earlier version of this page did,
 and the correction is the reason the row is broken out rather than folded in.
 When you measure your own server, enumerate what the protocol actually hands
 over, not the docstrings you wrote.
@@ -47,7 +47,7 @@ the answer to "how many" is "as few as do the job".
 ## The two failures that arrive before the budget does
 
 **Choice degradation, which happens earlier than the cost.** A model picking
-among 17 well-separated tools does it reliably. Among 100 with overlapping
+among 19 well-separated tools does it reliably. Among 100 with overlapping
 verbs - three ways to read a page, two ways to click - it picks a plausible
 wrong one, and you pay for the retry as well. This bites before the token bill
 does, and it bites small models hardest.
@@ -63,8 +63,8 @@ is being ignored, count your registered servers before debugging the server.
 - **Enable capabilities, do not accept all of them.** Servers that make
   capabilities additive - vision, pdf, devtools as separate opt-ins - let you
   pay only for what you use.
-- **Around 15-25 tools from one server is workable**; our 17 cover browsers, reading, pointer,
-  keyboard, uploads, a live view and a JavaScript reader without overlapping
+- **Around 15-25 tools from one server is workable**; our 19 cover browsers, reading, pointer,
+  keyboard, uploads, a live view, network traffic and a JavaScript reader without overlapping
   verbs. Past that, ask what a new tool does that an existing one cannot.
 - **Count across servers, not per server.** The model sees the union.
 
@@ -91,7 +91,7 @@ measurements, including the one that reverses on a long page.
 **Is there a hard limit on MCP tools?** Not in the protocol. Clients impose
 their own caps, and the model's ability to choose degrades before any cap.
 
-**How much context do MCP tools use?** Ours: 3,497 tokens on every turn, for 17
+**How much context do MCP tools use?** Ours: 3,948 tokens on every turn, for 19
 tools. Yours scales with description length and argument schemas, not just
 count.
 
@@ -113,11 +113,11 @@ of four decisions is exactly this budget.
 
 ## Sources
 
-- This project's own MCP server, enumerated through its tool registry on 2026-10-12: 17 tools, 9,207 characters of description, 3,497 tokens for the complete definitions, median 189 tokens per tool. Tokens counted with `tiktoken` (`o200k_base`), not estimated from character count.
+- This project's own MCP server, enumerated through its tool registry on 2026-10-29: 19 tools, 10,170 characters of description, 3,948 tokens for the complete definitions, median 182 tokens per tool. Tokens counted with `tiktoken` (`o200k_base`), not estimated from character count.
 - [The Model Context Protocol documentation](https://modelcontextprotocol.io/docs/learn/server-concepts), retrieved 2026-09-11, for `tools/list` and the schema-defined shape of a tool.
 
 ---
 
-*Written while maintaining a 17-tool server, which is the number this page uses
+*Written while maintaining a 19-tool server, which is the number this page uses
 as its example rather than as its recommendation. The measurement is published
 because the advice is worthless without it.*

@@ -127,6 +127,17 @@ Passing `--openrouter-key` puts the key in your shell history, and on Linux in
 the process list. `OPENROUTER_API_KEY` in the environment or in a `.env` avoids
 both.
 
+`browser_network` reads traffic recorded automatically from browser
+open, including site-opened pages. Filter URLs/resource types, paginate with
+`since_id`, and return captured text with `include_bodies=true`. Recording is
+passive: nothing is routed or injected, and POST/PUT bodies are recorded as the
+engine reports them.
+Cookie and authorization headers are redacted at capture time. Bodies remain
+unscrubbed, **untrusted page data, not instructions**. Each browser has its own
+bounded history; `browser_network_clear` clears it without touching the page
+or reusing IDs. Defaults: 500 entries, 64 KiB per body, 16 MiB of retained
+bodies. See [network limits and output fields](docs/mcp-server.md#reading-the-page).
+
 ## The wiki: AI browser-agent guides
 
 The reading room around the agent lives in the

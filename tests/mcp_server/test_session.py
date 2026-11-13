@@ -24,6 +24,13 @@ class _FakeContext:
     def __init__(self):
         self.pages = []
         self.closed = False
+        self.listeners = {}
+
+    def on(self, event, listener):
+        self.listeners[event] = listener
+
+    def remove_listener(self, event, listener):
+        assert self.listeners.pop(event) == listener
 
     async def new_page(self):
         p = _FakePage(); self.pages.append(p); return p
