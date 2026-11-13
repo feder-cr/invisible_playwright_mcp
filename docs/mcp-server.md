@@ -167,7 +167,7 @@ a browser gets when nobody says anything.
 `browser_open`, `browser_close`, `browser_list`, `browser_status`,
 `browser_navigate`, `browser_read_text`, `browser_snapshot`, `browser_read_html`,
 `browser_take_screenshot`, `browser_watch`, `browser_click`, `browser_click_at`,
-`browser_type`, `browser_select_option`, `browser_press_key`,
+`browser_drag`, `browser_type`, `browser_select_option`, `browser_press_key`,
 `browser_upload_files`, `browser_evaluate`.
 
 Tool names mirror the Microsoft Playwright MCP, so prompts written for it work

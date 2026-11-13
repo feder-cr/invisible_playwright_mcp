@@ -647,6 +647,31 @@ async def browser_click_at(x: float, y: float, hold_seconds: float = 0.0,
     return Image(data=png, format="png")
 
 
+@mcp.tool(annotations=_says("Draw a pointer path", destructive=True))
+async def browser_drag(strokes: list[list[list[float]]],
+                       browser: Browser = None) -> Image:
+    """Press, move, and release the pointer along one or more strokes.
+
+    Each stroke is a list of [x, y] viewport-coordinate waypoints.
+    The pointer travels to the first waypoint, presses, moves through
+    the rest with human-like motion, and releases. Multiple strokes
+    lift between each -- use this for signature pads or multi-segment
+    drags.
+
+    Coordinates come from browser_snapshot's `at: [x, y]` values or
+    from inspecting the target element's bounding box."""
+    if not strokes:
+        raise ToolError("strokes must contain at least one stroke")
+    for i, stroke in enumerate(strokes):
+        if not isinstance(stroke, list) or len(stroke) < 2:
+            raise ToolError(f"stroke {i} must have at least 2 [x, y] waypoints")
+        for j, point in enumerate(stroke):
+            if not isinstance(point, list) or len(point) != 2:
+                raise ToolError(f"stroke {i} waypoint {j} must be [x, y]")
+    png = await _work().acting(actions.drag_path, strokes, role=browser)
+    return Image(data=png, format="png")
+
+
 @mcp.tool(annotations=_says("Type into a field", destructive=True))
 async def browser_type(selector: str, text: str, browser: Browser = None) -> str:
     """Type into a field, replacing what it holds, key by key at a human pace.
