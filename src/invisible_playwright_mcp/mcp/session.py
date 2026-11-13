@@ -69,6 +69,7 @@ class StealthSession:
     async def start(self) -> None:
         self._ipw = InvisiblePlaywright(**self._kwargs)
         await self._attach(await self._ipw.__aenter__())
+        self._arm_choosers()
 
     def is_usable(self) -> bool:
         """Whether this object is worth handing out, asked WITHOUT talking to
@@ -116,6 +117,23 @@ class StealthSession:
 
     async def new_page(self):
         return await self._context.new_page()
+
+    def _arm_choosers(self) -> None:
+        """Keep every page's file chooser intercepted for the life of the page.
+
+        The engine intercepts a chooser only while something listens for one,
+        and only browser_upload_files listened. Any other click that opened a
+        chooser - browser_click on a file input, or on the drop zone it covers -
+        opened the browser's own file dialog, which no tool can answer. The
+        browser opens no second picker for an input whose first is still up, so
+        every upload to that input afterwards failed with "opened no file
+        chooser" until the page built a new input. A listener on every page
+        means the native dialog never opens; an intercepted chooser nobody
+        answers holds nothing open, so the next click opens a fresh one.
+        """
+        self._context.on("page", _arm_page)
+        for page in self.pages():
+            _arm_page(page)
 
     def page(self):
         """The page a command drives: the newest live one.
@@ -285,3 +303,8 @@ class StealthSession:
         for path in self._kept:
             shutil.rmtree(path, ignore_errors=True)
         self._kept.clear()
+
+
+def _arm_page(page) -> None:
+    """A listener that answers nothing: being there is what arms the engine."""
+    page.on("filechooser", lambda _chooser: None)

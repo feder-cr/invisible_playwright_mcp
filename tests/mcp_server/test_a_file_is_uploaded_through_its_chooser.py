@@ -578,3 +578,23 @@ def test_a_file_unlinked_while_copied_keeps_its_name(allowed, private_tmp, monke
     copy, = actions.snapshot_files(real, env=_env(allowed))
     assert os.path.basename(copy) == "a.pdf"
     assert open(copy, "rb").read() == b"%PDF-1.4 a"
+
+
+@pytest.mark.e2e
+def test_an_input_a_stray_click_opened_still_takes_the_files(url, env):
+    """A click on a file input with no upload waiting - browser_click on it,
+    or on the drop zone it covers - opened the browser's own file dialog,
+    which no tool can answer. The browser opens no second picker for an input
+    whose first is still up, so every upload to that input afterwards failed
+    with "opened no file chooser"."""
+    async def body(session):
+        await actions.click(session, "#one")
+        await asyncio.sleep(0.5)
+        out = await actions.upload_files(session, "#one", [str(env / "a.pdf")])
+        return out, await session.page().evaluate("JSON.stringify(seen)")
+
+    import json
+    out, raw = asyncio.run(_with_browser(url, body))
+    seen = json.loads(raw)
+    assert out == "attached 1 file to #one (picked in the file chooser): a.pdf", out
+    assert seen == {"one": {"trusted": True, "names": ["a.pdf"], "sizes": [10]}}, seen
